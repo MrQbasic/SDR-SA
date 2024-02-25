@@ -17,7 +17,7 @@ private:
     Color col;
     //scanner for spectrum
     SDR* sdr;
-    double* specterum = nullptr;
+    double* spectrum = nullptr;
     int spectrumSize = 0;
     bool scannerRunning = false;
     Scanner* scanner;

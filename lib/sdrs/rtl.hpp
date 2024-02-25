@@ -35,6 +35,7 @@ public:
         SamplesOutput = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * SampleBufferSize / 2);
         fftplan = fftw_plan_dft_1d(SampleBufferSize/2, SamplesInput, SamplesOutput, FFTW_FORWARD, FFTW_ESTIMATE);
         //mark as init
+        std::cout << "SDR INIT OK!" << std::endl;
         this->state = 1;
     }
 
@@ -44,7 +45,6 @@ public:
     }
 
     void disconnect() override{
-        std::cout << "EXIT CALLED ON SDR!" << std::endl;
         fftw_destroy_plan(fftplan);
         fftw_free(SamplesInput);
         fftw_free(SamplesOutput);
@@ -67,8 +67,6 @@ public:
         }
         *amount += num;
     }
-
-
 
     void getFFT(double* buffer, int size, int copySize, long long centerFreq){
         //set freq

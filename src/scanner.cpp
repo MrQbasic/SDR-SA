@@ -1,4 +1,5 @@
 #include <scanner.hpp>
+#include <iostream>
 #include <math.h>
 
 Scanner::Scanner(SDR* sdr, double* buffer, int size, long long start, long long end){
@@ -14,6 +15,7 @@ Scanner::Scanner(SDR* sdr, double* buffer, int size, long long start, long long 
 }
 
 void Scanner::execute(){
+    std::cout << "NEW SCANNER THREAD SPAWNED!" << std::endl;
 
     long long bandwidth = this->end - this->start;
     
@@ -27,7 +29,7 @@ void Scanner::execute(){
     
     std::cout << sizeOfLastSection << std::endl;
 
-    while(this->run){
+    while(run){
         double bufpos = 0;
         for(int s=0; s<sections; s++){
             long long centerFreq = this->start - this->sdr->getSampleRate() / 2 + this->sdr->getSampleRate()* s;
@@ -46,4 +48,5 @@ void Scanner::execute(){
 void Scanner::stop(){
     this->run = false;
     while(!this->died);
+    std::cout << "SCANNER THREAD KILLED!" << std::endl;
 }

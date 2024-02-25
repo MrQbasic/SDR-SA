@@ -123,7 +123,7 @@ MenuFrame::MenuFrame(RTLSDR* sdr){
     this->titles   = new const char*[this->numberOfSettings];
     //setup settings
     //-disconnect button
-    auto discon = [sdr](){std::cout << "WHY TF IS THE DISCON CALLED ?" << std::endl;sdr->disconnect();};
+    auto discon = [sdr](){std::cout << "WHY TF IS THE DISCON CALLED ?" << std::endl;sdr->state=2;};
     this->settings[0] = new Button("Disconnect", discon);
     this->titles[0] = "\n";
     //-gain settings

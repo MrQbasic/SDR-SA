@@ -60,21 +60,25 @@ double clampDouble(double n, double max, double min){
 
 
 void Graph::render(){
-    if(this->sdr->state == 0){
-        if(this->scannerRunning){
-            //stop scanner
+    //check if we need to render the graph
+    if(this->sdr->state != 1){
+        //check if we need to kill old scanner and disconnect unused sdr
+        if(this->sdr->state == 2){
+            this->scanner->stop();
+            this->sdr->disconnect();
+            this->spectrumSize = 0;
         }
         return;
     }
     if(this->spectrumSize != this->width){
-        if(this->specterum != nullptr){
-            delete this->specterum;
+        if(this->spectrum != nullptr){
+            delete this->spectrum;
         }
-        this->specterum = new double[width] {10.0,100.0};
+        this->spectrum = new double[width] {10.0,100.0};
         for(int i=0; i<width; i++){
-            this->specterum[i] = 0.0;
+            this->spectrum[i] = 0.0;
         }
-        this->scanner = new Scanner(this->sdr, this->specterum, width, freqStart, freqEnd);
+        this->scanner = new Scanner(this->sdr, this->spectrum, width, freqStart, freqEnd);
         this->spectrumSize = width;
     }
     //render spectrum
@@ -83,9 +87,9 @@ void Graph::render(){
     for(int x=1; x<width; x++){
         DrawLine(
             posX+x-1,
-            zeroPosY-pxPerDb*clampDouble(this->specterum[x-1], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrum[x-1], dbTop, dbBottom), 
             posX+x, 
-            zeroPosY-pxPerDb*clampDouble(this->specterum[x], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrum[x], dbTop, dbBottom), 
             this->col
         );
     }
