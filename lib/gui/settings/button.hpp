@@ -3,6 +3,7 @@
 #include <gui/setting.hpp>
 #include <gui/def.hpp>
 #include <raylib.h>
+#include <iostream>
 
 #include <functional>
 
@@ -65,7 +66,6 @@ public:
             if(latching){
                 *state ^= 1;
             }else{
-                std::cout << "DOING CALLBACK!" << this->text << std::endl;
                 cb();
             }
         }

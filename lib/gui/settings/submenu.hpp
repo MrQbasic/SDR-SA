@@ -21,6 +21,7 @@ public:
     }
     
     void action(int posX, int posY, int my, int mx, int button) override{
+        if(!*this->displayState) return;
         this->frame->action(my, mx, button);
     }
 
