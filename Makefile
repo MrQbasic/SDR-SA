@@ -5,7 +5,7 @@ DIR_SRC				:= ./src
 DIR_LIB				:= ./lib
 
 GPP					:= g++
-GPP_FLAGS			:= -lrtlsdr -lm -lraylib -lfftw3
+GPP_FLAGS			:= -lrtlsdr -lm -lraylib -lfftw3 -g
 
 MKDIR				:= mkdir
 
