@@ -14,13 +14,17 @@ private:
     static int height;
     static double dbTop, dbBottom;
     static long long freqStart, freqEnd;
+    static int globalConfigID;
+    int configID = 0;
     Color col;
     //scanner for spectrum
     SDR* sdr;
-    double* spectrum = nullptr;
-    int spectrumSize = 0;
-    bool scannerRunning = false;
-    Scanner* scanner;
+    int     type           = 0;             // 0:avg 1:max
+    double* spectrumVal    = nullptr;
+    int*    spectrumValCnt = nullptr;
+    int     spectrumSize   = 0;
+    bool    scannerRunning = false;
+    Scanner* scanner       = nullptr;
 
 public:
 

@@ -5,8 +5,10 @@
 
 class Scanner {
 private:
-    double* outputBuffer;
-    int outputBufferSize;
+    double* outputBufferVal;
+    int*    outputBufferValCnt;
+    int     outputBufferSize;
+    int     graphType;
     long long start, end;
 
     SDR* sdr;
@@ -16,7 +18,9 @@ private:
     std::thread* thread;
 
 public:
-    Scanner(SDR* sdr, double* buffer, int size, long long start, long long end);
+    Scanner(SDR* sdr, double* bufferVal, int* bufferValCnt, int graphType, int size, long long start, long long end);
+
+    ~Scanner();
 
     void execute();
     

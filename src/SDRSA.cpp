@@ -18,7 +18,7 @@
 #include <string>
  
 long long freqStart =  80 * 1000 * 1000; //80MHZ
-long long freqEnd   = 115 * 1000 * 1000; //115MHZ
+long long freqEnd   = 1700 * 1000 * 1000; //115MHZ
 long long dbTop = 10;
 long long dbBottom = -100;
 
@@ -42,7 +42,6 @@ int main(){
     //scan for SDRs
     int sdrCnt = 0;
     const char** sdrNames;
-    
     RTLSDR::getSDRs(&sdrCnt, &sdrNames);
 
     //main menu
@@ -59,13 +58,13 @@ int main(){
 
     SDR** sdrs = new SDR*[sdrCnt];
 
-    Graph** graphs;
+    Graph** graphs = new Graph*[sdrCnt];
 
     for(int i=0; i<sdrCnt; i++){
         sdrs[i] = new RTLSDR(i);
         graphs[i] = new Graph(graphColors[i], sdrs[i]);
-        MenuFrame** subsubframes = new MenuFrame*[2]; 
-        //construct SDR submenu button
+        MenuFrame** subsubframes = new MenuFrame*[2];
+        //construct SDR selector
         sdrSelect[i] = false;
         sdrSelectBuffer[i] = false;
         Button* sdrButton = new Button(sdrNames[i], &(sdrSelect[i]));
@@ -76,16 +75,13 @@ int main(){
         auto sdrPrt = sdrs[i];
         auto conFunction = [sdrPrt, subsubframes](){
             sdrPrt->init();
-            subsubframes[1] = new MenuFrame((RTLSDR*)sdrPrt);
+            subsubframes[1] = new MenuFrame((RTLSDR*)sdrPrt);   // the other menu is created when the init is called
         };
-        Setting** conSetting = new Setting*[1];
-        conSetting[0] = new Button("Connect",conFunction);
-        const char** conTitle = new const char*[i];
-        conTitle[0] = "\n";
+        Setting* connectButton = new Button("Connect",conFunction);
+        const char* connectButtonTitle[] = {"\n"};
         //SubSubmenu
-        subsubframes[0] = new MenuFrame(conSetting, conTitle, 1);
+        subsubframes[0] = new MenuFrame((&connectButton), connectButtonTitle, 1);
         f_Sdr_submenu[i] = new ConditionalMenuFrame(subsubframes,2,&(sdrs[i]->state));
-        //Submenu
         s_Sdr[i*2+2] = new Submenu(f_Sdr_submenu[i], &sdrSelect[i]);
         t_Sdr[i*2+2] = "\n";
     }
@@ -95,19 +91,20 @@ int main(){
     Button s_PauseButton = Button("PAUSE ALL", &paused);
     s_Sdr[0] = &s_PauseButton;
     t_Sdr[0] = "\n";
-    MenuFrame f_Sdr = MenuFrame(s_Sdr, t_Sdr, 2*sdrCnt+1);
-    MenuEntry m_Sdr = MenuEntry("SDR", &f_Sdr);
+    MenuFrame* f_Sdr = new MenuFrame(s_Sdr, t_Sdr, 2*sdrCnt+1);
+    MenuEntry m_Sdr = MenuEntry("SDR", f_Sdr);
 
+    
     //calculate position of submenus
-    int sdrMenuPosX = f_Sdr.getPosX();
+    int sdrMenuPosX = f_Sdr->getPosX();
     for(int i=0; i<sdrCnt; i++){
         if( sdrMenuPosX > GetScreenWidth()/2){
             f_Sdr_submenu[i]->setPosX(sdrMenuPosX - f_Sdr_submenu[i]->getWidth());
         }else{
-            f_Sdr_submenu[i]->setPosX(sdrMenuPosX + f_Sdr.getWidth());
+            f_Sdr_submenu[i]->setPosX(sdrMenuPosX + f_Sdr->getWidth());
         }
     }
-
+    
 
     while(!WindowShouldClose()){
         BeginDrawing();
@@ -116,7 +113,7 @@ int main(){
         int my = GetMouseY();
         int sw = GetScreenWidth();
         int sh = GetScreenHeight();
-
+        
         //check for an action
         if(IsMouseButtonPressed(0)){
             m_Dim.action(mx, my, 0);
@@ -147,14 +144,16 @@ int main(){
 
         //render background
         ClearBackground(BLACK);
-        MenuEntry::renderBG();
         Graph::setDimensions(GRAPH_PADDING, GRAPH_PADDING+MENU_Y_START+MENU_HEIGHT, sw-GRAPH_PADDING*2, sh-GRAPH_PADDING*2-MENU_HEIGHT-MENU_Y_START, (double) dbTop, (double) dbBottom, freqStart, freqEnd);
+        MenuEntry::renderBG();
         Graph::renderGrapBackground();
 
+        
         //render graphs
         for(int i=0; i<sdrCnt; i++){
             graphs[i]->render();
         }
+        
 
         //render Menus
         m_Dim.render(mx, my);

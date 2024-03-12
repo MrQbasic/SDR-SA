@@ -55,7 +55,7 @@ public:
     }
 
     long long getSampleRate() override{
-        return RTLSDR_SAMPLE_RATE * 0.75;
+        return RTLSDR_SAMPLE_RATE;
     }
     
     static void getSDRs (int* amount, const char*** names){
@@ -70,7 +70,7 @@ public:
 
     void getFFT(double* buffer, int size, int copySize, long long centerFreq){
         //set freq
-        rtlsdr_set_center_freq(this->rtlsdr, (uint32_t) centerFreq - (uint32_t) 0.25*getSampleRate());
+        rtlsdr_set_center_freq(this->rtlsdr, (uint32_t) centerFreq - (uint32_t) getSampleRate());
         //read samples
         int read = 0;
         rtlsdr_read_sync(this->rtlsdr, SampleBuffer, SampleBufferSize, &read);
@@ -114,13 +114,17 @@ public:
                 break;
             }
         }
+        std::cout << "current gain and gainIndex is: " << gain << " " << gainIndex << std::endl;
         //move gainIndex and cap it
         gainIndex += factor;
         if(gainIndex < 0) gainIndex = 0;
         if(gainIndex > GainSettingAmout-1) gainIndex = GainSettingAmout-1;
         //check if anything changed
         if(gain != GainSettings[gainIndex]){
-            rtlsdr_set_tuner_gain(this->rtlsdr, GainSettings[gainIndex]);
+            int error = -1;
+            while(error != 0){
+                error = rtlsdr_set_tuner_gain(this->rtlsdr, GainSettings[gainIndex]);
+            }
         }
         //return selected gain val
         return(GainSettings[gainIndex]);

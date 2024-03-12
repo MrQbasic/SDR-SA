@@ -2,9 +2,11 @@
 #include <iostream>
 #include <math.h>
 
-Scanner::Scanner(SDR* sdr, double* buffer, int size, long long start, long long end){
+Scanner::Scanner(SDR* sdr, double* bufferVal, int* bufferValCnt, int graphType, int size, long long start, long long end){
     this->sdr = sdr; 
-    this->outputBuffer = buffer;
+    this->outputBufferVal    = bufferVal;
+    this->outputBufferValCnt = bufferValCnt;
+    this->graphType          = graphType;
     this->outputBufferSize = size;
     this->start = start;
     this->end   = end;
@@ -15,7 +17,6 @@ Scanner::Scanner(SDR* sdr, double* buffer, int size, long long start, long long 
 }
 
 void Scanner::execute(){
-    std::cout << "NEW SCANNER THREAD SPAWNED!" << std::endl;
 
     long long bandwidth = this->end - this->start;
     
@@ -32,13 +33,14 @@ void Scanner::execute(){
     while(run){
         double bufpos = 0;
         for(int s=0; s<sections; s++){
+            if(!run) break; // make it quit faster
             long long centerFreq = this->start - this->sdr->getSampleRate() / 2 + this->sdr->getSampleRate()* s;
             if(s == sections-1 && sizeOfLastSection > 0){
                 //only do a bit on the last section
-                this->sdr->getFFT(this->outputBuffer+(int)round(bufpos), sectionBufferSize, outputBufferSize - bufpos, centerFreq);
+                this->sdr->getFFT(this->outputBufferVal+(int)round(bufpos), sectionBufferSize, outputBufferSize - bufpos, centerFreq);
                 continue;
             }
-            this->sdr->getFFT(this->outputBuffer+(int)round(bufpos), sectionBufferSize, -1, centerFreq);
+            this->sdr->getFFT(this->outputBufferVal+(int)round(bufpos), sectionBufferSize, -1, centerFreq);
             bufpos += sectionBufferSize; 
         }
     }
@@ -46,7 +48,16 @@ void Scanner::execute(){
 }
 
 void Scanner::stop(){
+    if(!this->run){
+        std::cout << "Why are you trying to kill a not running thread ?!?" << std::endl;
+        return;
+    }
     this->run = false;
     while(!this->died);
-    std::cout << "SCANNER THREAD KILLED!" << std::endl;
+}
+
+Scanner::~Scanner(){
+    this->stop();
+    this->thread->join();
+    delete this->thread;
 }

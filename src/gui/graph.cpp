@@ -10,17 +10,32 @@ long long Graph::freqStart = 0;
 long long Graph::freqEnd = 0;
 double Graph::dbBottom = 0;
 double Graph::dbTop = 0;
+int Graph::globalConfigID = 0;
 
 
 void Graph::setDimensions(int v_posX, int v_posY, int v_width, int v_height, double v_dbTop, double v_dbBottom, long long v_freqStart, long long v_freqEnd){
+    //only check on those relevant for the scanner not only for rendering
+    bool detectedChange = false;
+    //dimensions
+    detectedChange |= posX != v_posX;
     posX = v_posX;
+    detectedChange |= posY != v_posY;
     posY = v_posY;
+    detectedChange |= width != v_width;
     width = v_width;
     height = v_height;
+    //db
     dbBottom = v_dbBottom;
     dbTop = v_dbTop;
+    //freqs
+    detectedChange |= freqEnd != v_freqEnd;
     freqEnd = v_freqEnd;
+    detectedChange |= freqStart != v_freqStart;
     freqStart = v_freqStart;
+    //if there is a change inc conf ig
+    if(detectedChange){
+        globalConfigID++;
+    }
 }
 
 void Graph::renderGrapBackground(){
@@ -64,21 +79,37 @@ void Graph::render(){
     if(this->sdr->state != 1){
         //check if we need to kill old scanner and disconnect unused sdr
         if(this->sdr->state == 2){
-            this->scanner->stop();
+            delete this->scanner;
+            this->scanner = nullptr;
             this->sdr->disconnect();
             this->spectrumSize = 0;
         }
         return;
     }
-    if(this->spectrumSize != this->width){
-        if(this->spectrum != nullptr){
-            delete this->spectrum;
+    //check if the cfg changed
+    if(globalConfigID != this->configID){
+        this->configID = globalConfigID;
+        //is we need to deleate the old arrays
+        if(this->spectrumVal != nullptr){
+            delete this->spectrumVal;
+            delete this->spectrumValCnt;
         }
-        this->spectrum = new double[width] {10.0,100.0};
+        //create new arrays and reset them
+        this->spectrumVal    = new double[width];
+        this->spectrumValCnt = new int[width];
         for(int i=0; i<width; i++){
-            this->spectrum[i] = 0.0;
+            this->spectrumVal[i]    = 0.0;
+            this->spectrumValCnt[i] = 1;
         }
-        this->scanner = new Scanner(this->sdr, this->spectrum, width, freqStart, freqEnd);
+        //check if old scanner has to be killed
+        if(this-> scanner != nullptr){
+            delete this->scanner;
+            this->scanner == nullptr;
+        }
+        //create new scanner
+        this->scanner = new Scanner(
+            this->sdr, this->spectrumVal, this->spectrumValCnt, this->type,
+            width, freqStart, freqEnd);
         this->spectrumSize = width;
     }
     //render spectrum
@@ -87,9 +118,9 @@ void Graph::render(){
     for(int x=1; x<width; x++){
         DrawLine(
             posX+x-1,
-            zeroPosY-pxPerDb*clampDouble(this->spectrum[x-1], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x-1]/spectrumValCnt[x-1], dbTop, dbBottom), 
             posX+x, 
-            zeroPosY-pxPerDb*clampDouble(this->spectrum[x], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x]/spectrumValCnt[x], dbTop, dbBottom), 
             this->col
         );
     }
