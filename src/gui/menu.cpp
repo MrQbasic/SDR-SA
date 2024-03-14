@@ -63,19 +63,17 @@ void MenuEntry::action(int mx, int my, int button){
     }
 }
 
-MenuFrame::MenuFrame(Setting* settings[], const char* titles[], int numberOfSettings){
-    this->numberOfSettings = numberOfSettings;
-    this->titles = titles;
+MenuFrame::MenuFrame(std::vector<Setting*> settings){
     this->settings = settings;
     this->width = 0; 
     this->height = 0;
     //auto find width and height
-    for(int i=0; i<numberOfSettings; i++){
+    for(int i=0; i<settings.size(); i++){
         int spacer = 100;
-        if(titles[i][0] == '\n'){
+        if(settings[i]->getTitle()[0] == '\n'){
             spacer = 0;
         }
-        int widthOfEntry = settings[i]->getWidth() + MeasureText(this->titles[i], SETTING_HEIGHT-4) + spacer; // text + setting + padding inbetween
+        int widthOfEntry = settings[i]->getWidth() + MeasureText(settings[i]->getTitle(), SETTING_HEIGHT-4) + spacer; // text + setting + padding inbetween
         if(this->width < widthOfEntry) this->width = widthOfEntry;
         //
         this->height += settings[i]->getHeight() + MENU_FRAME_Y_SPACE;
@@ -90,8 +88,8 @@ void MenuFrame::render(int my, int mx){
     DrawRectangleLinesEx(outline, 3, COLOR_SELECTED);
 
     int currentY = posY + MENU_FRAME_PADDING;
-    for(int i=0; i<this->numberOfSettings; i++){
-        DrawText(this->titles[i], posX+MENU_FRAME_PADDING, currentY+2, SETTING_HEIGHT-4, RAYWHITE);
+    for(int i=0; i<this->settings.size(); i++){
+        DrawText(this->settings[i]->getTitle(), posX+MENU_FRAME_PADDING, currentY+2, SETTING_HEIGHT-4, RAYWHITE);
         this->settings[i]->render(posX + width - MENU_FRAME_PADDING - this->settings[i]->getWidth(), currentY, my, mx);
         currentY += this->settings[i]->getHeight() + MENU_FRAME_Y_SPACE;
     }
@@ -99,7 +97,7 @@ void MenuFrame::render(int my, int mx){
 
 void MenuFrame::action(int my, int mx, int button){
     int currentY = posY + MENU_FRAME_PADDING;
-    for(int i=0; i<this->numberOfSettings; i++){
+    for(int i=0; i<this->settings.size(); i++){
         this->settings[i]->action(posX + width - MENU_FRAME_PADDING - this->settings[i]->getWidth(), currentY, my, mx, button);
         currentY += this->settings[i]->getHeight() + MENU_FRAME_Y_SPACE;
     }
@@ -117,15 +115,10 @@ void MenuFrame::setPosY(int y) {this->posY = y;}
 
 
 MenuFrame::MenuFrame(RTLSDR* sdr){
-    //setup arrays
-    this->numberOfSettings = 2;
-    this->settings = new Setting*[this->numberOfSettings];
-    this->titles   = new const char*[this->numberOfSettings];
     //setup settings
     //-disconnect button
     auto discon = [sdr](){std::cout << "WHY TF IS THE DISCON CALLED ?" << std::endl;sdr->state=2;};
-    this->settings[0] = new Button("Disconnect", discon);
-    this->titles[0] = "\n";
+    this->settings.push_back(new Button("Disconnect", discon, "\n"));
     //-gain settings
     char* gainText = new char[100];
     double gain = (double) sdr->changeGain(-10000) / 10.0;
@@ -142,25 +135,20 @@ MenuFrame::MenuFrame(RTLSDR* sdr){
         std::cout << "dec changed @: " << sdr << std::endl;
 
     };
-    
-    std::cout << &discon << " " << &incGain << " " << &decGain << std::endl;
-
-    Setting** gainSetting = new Setting*[3];
-    gainSetting[0] = new Button("+",incGain);
-    //gainSetting[0] = new DummySetting();
-    gainSetting[1] = new Button("-",decGain);
-    gainSetting[2] = new Text(gainText);
-    this->settings[1] = new inOneLine(gainSetting, 3);
-    this->titles[1] = "Gain:";
+    std::vector<Setting*> gainSetting;
+    gainSetting.push_back(new Button("+",incGain, "\n"));
+    gainSetting.push_back(new Button("-",decGain, "\n"));
+    gainSetting.push_back(new Text(gainText,"\n"));
+    this->settings.push_back(new inOneLine(gainSetting, "Gain:"));
     //auto find width and height
     this->width = 0; 
     this->height = 0;
-    for(int i=0; i<numberOfSettings; i++){
+    for(int i=0; i<settings.size(); i++){
         int spacer = 100;
-        if(titles[i][0] == '\n'){
+        if(settings[i]->getTitle()[0] == '\n'){
             spacer = 0;
         }
-        int widthOfEntry = settings[i]->getWidth() + MeasureText(this->titles[i], SETTING_HEIGHT-4) + spacer; // text + setting + padding inbetween
+        int widthOfEntry = settings[i]->getWidth() + MeasureText(settings[i]->getTitle(), SETTING_HEIGHT-4) + spacer; // text + setting + padding inbetween
         if(this->width < widthOfEntry) this->width = widthOfEntry;
         //
         this->height += settings[i]->getHeight() + MENU_FRAME_Y_SPACE;

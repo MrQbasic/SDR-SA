@@ -5,6 +5,8 @@
 
 class DummySetting : public Setting{
 
+    DummySetting() : Setting("\n"){}
+
     void render(int posX, int posY, int my, int mx) override {}
     void action(int posX, int posY, int my, int mx, int button) override {}
 

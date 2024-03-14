@@ -8,7 +8,7 @@ private:
     i_MenuFrame* frame;
 
 public:
-    Submenu(i_MenuFrame* frame, bool* state){
+    Submenu(i_MenuFrame* frame, bool* state, const char* title):Setting(title){
         this->displayState = state;
         this->frame = frame;
     }

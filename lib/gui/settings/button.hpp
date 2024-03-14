@@ -21,7 +21,7 @@ private:
 
 public:
     
-    Button(const char* text, bool* state){
+    Button(const char* text, bool* state, const char* title):Setting(title){
         this->latching = true;
         this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
         this->state = state;
@@ -29,7 +29,7 @@ public:
         this->textcols = nullptr;
     }
 
-    Button(const char* text, std::function<void()> callBack){
+    Button(const char* text, std::function<void()> callBack, const char* title):Setting(title){
         this->latching = false;
         this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
         this->cb = callBack;

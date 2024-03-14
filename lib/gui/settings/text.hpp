@@ -7,7 +7,7 @@ private:
     char* text;
 
 public:
-    Text(char* text){
+    Text(char* text, const char* title):Setting(title){
         this->text = text;
     }
 

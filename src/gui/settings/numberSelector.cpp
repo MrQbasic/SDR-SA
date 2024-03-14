@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <math.h>
 
-NumberSelector::NumberSelector(long long max, long long min, long long* val){
+NumberSelector::NumberSelector(long long max, long long min, long long* val, const char* title):Setting(title){
     if(min >= max){
         std::cout << "ERROR: MIN IS BIGGER OR EQ TO MAX IN NumberSelector CONSTRUCTOR!" << std::endl;
         std::exit(-1);

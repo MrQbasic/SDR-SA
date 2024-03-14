@@ -3,6 +3,7 @@
 #include <string>
 #include <gui/setting.hpp>
 #include <sdrs/rtl.hpp>
+#include <vector>
 
 
 class i_MenuFrame{
@@ -20,14 +21,11 @@ public:
 class MenuFrame : public i_MenuFrame{
 private:
     int width, height, posX, posY;
-
-    Setting**     settings;
-    const char** titles;
-    int           numberOfSettings;
+    std::vector<Setting*> settings;
 
 public:
 
-    MenuFrame(Setting* settings[], const char* titles[], int numberOfSettings);
+    MenuFrame(std::vector<Setting*> settings);
     MenuFrame(RTLSDR* sdr);
     
     void render(int my, int mx);

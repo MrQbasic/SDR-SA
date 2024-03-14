@@ -14,7 +14,7 @@
 #include <sdrs/rtl.hpp>
 
 #include <iostream>
-
+#include <vector>
 #include <string>
  
 long long freqStart =  90 * 1000 * 1000; //80MHZ
@@ -30,14 +30,14 @@ int main(){
     SetTargetFPS(60);
 
     //Gerneal Dimension Settings) spacer = 0
-    NumberSelector s_freqStart = NumberSelector(99999999999, 0, &freqStart);
-    NumberSelector s_freqEnd   = NumberSelector(99999999999, 0, &freqEnd);
-    NumberSelector s_dbTop     = NumberSelector(99, -150, &dbTop);
-    NumberSelector s_dbBottom  = NumberSelector(99, -150, &dbBottom);
-    Setting* s_Dim[] = {&s_freqStart, &s_freqEnd, &s_dbTop, &s_dbBottom};
-    const char* t_Dim[] = {"START:", "END:", "DB TOP:", "DB BOTTOM:"};
-    MenuFrame f_Dim = MenuFrame(s_Dim, t_Dim, 4);
+    std::vector<Setting*> settingsDimension;
+    settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqStart, "START:"));
+    settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqEnd,   "END:"));
+    settingsDimension.push_back(new NumberSelector(99,          -150, &dbTop,     "DB TOP:"));
+    settingsDimension.push_back(new NumberSelector(99,          -150, &dbBottom,  "DB BOTTOM:"));
+    MenuFrame f_Dim = MenuFrame(settingsDimension);
     MenuEntry m_Dim = MenuEntry("SPECTRUM", &f_Dim);
+
 
     //scan for SDRs
     int sdrCnt = 0;
@@ -47,8 +47,7 @@ int main(){
     //main menu
     bool* sdrSelect       = new bool[sdrCnt];
     bool* sdrSelectBuffer = new bool[sdrCnt];
-    Setting**    s_Sdr = new Setting*[2*sdrCnt+1];
-    const char** t_Sdr = new const char*[2*sdrCnt+1];
+    std::vector<Setting*> settingsSdr;
 
     Color sdrButtonColors[] = {RAYWHITE, BLUE};
     Color graphColors[] = {BLUE, RED, GREEN};
@@ -57,7 +56,6 @@ int main(){
     i_MenuFrame**   f_Sdr_submenu = new i_MenuFrame*[sdrCnt];
 
     SDR** sdrs = new SDR*[sdrCnt];
-
     Graph** graphs = new Graph*[sdrCnt];
 
     for(int i=0; i<sdrCnt; i++){
@@ -67,31 +65,26 @@ int main(){
         //construct SDR selector
         sdrSelect[i] = false;
         sdrSelectBuffer[i] = false;
-        Button* sdrButton = new Button(sdrNames[i], &(sdrSelect[i]));
+        Button* sdrButton = new Button(sdrNames[i], &(sdrSelect[i]), "\n");
         sdrButton->setupColorText(sdrButtonColors, &(sdrs[i]->state));
-        s_Sdr[i*2+1] = sdrButton;
-        t_Sdr[i*2+1] = "\n";
+        settingsSdr.push_back(sdrButton);
         //construct sdr connect menu
         auto sdrPrt = sdrs[i];
         auto conFunction = [sdrPrt, subsubframes](){
             sdrPrt->init();
             subsubframes[1] = new MenuFrame((RTLSDR*)sdrPrt);   // the other menu is created when the init is called
         };
-        Setting* connectButton = new Button("Connect",conFunction);
-        const char* connectButtonTitle[] = {"\n"};
+        std::vector<Setting*> connectSettings = {new Button("Connect",conFunction, "\n")};
         //SubSubmenu
-        subsubframes[0] = new MenuFrame((&connectButton), connectButtonTitle, 1);
+        subsubframes[0] = new MenuFrame(connectSettings);
         f_Sdr_submenu[i] = new ConditionalMenuFrame(subsubframes,2,&(sdrs[i]->state));
-        s_Sdr[i*2+2] = new Submenu(f_Sdr_submenu[i], &sdrSelect[i]);
-        t_Sdr[i*2+2] = "\n";
+        settingsSdr.push_back(new Submenu(f_Sdr_submenu[i], &sdrSelect[i], "\n"));
     }
     
 
     //SDR selector Menu
-    Button s_PauseButton = Button("PAUSE ALL", &paused);
-    s_Sdr[0] = &s_PauseButton;
-    t_Sdr[0] = "\n";
-    MenuFrame* f_Sdr = new MenuFrame(s_Sdr, t_Sdr, 2*sdrCnt+1);
+    settingsSdr.insert(settingsSdr.begin(), new Button("PAUSE ALL", &paused, "\n"));
+    MenuFrame* f_Sdr = new MenuFrame(settingsSdr);
     MenuEntry m_Sdr = MenuEntry("SDR", f_Sdr);
 
     
@@ -104,7 +97,6 @@ int main(){
             f_Sdr_submenu[i]->setPosX(sdrMenuPosX + f_Sdr->getWidth());
         }
     }
-    
 
     while(!WindowShouldClose()){
         BeginDrawing();
@@ -126,7 +118,7 @@ int main(){
         if(IsKeyPressed(KEY_SPACE)){
             paused ^= 1;
         }
-
+        
         //sdrmenu submenu
         int sdrSubmenuChanges = 0;
         for(int i=0; i<sdrCnt; i++){
@@ -139,7 +131,6 @@ int main(){
         }
         for(int i=0; i<sdrCnt; i++){
             sdrSelectBuffer[i] = sdrSelect[i];
-            //check if the currently selected SDR is
         }
 
         //render background
@@ -153,8 +144,8 @@ int main(){
         for(int i=0; i<sdrCnt; i++){
             graphs[i]->render();
         }
+    
         
-
         //render Menus
         m_Dim.render(mx, my);
         m_Sdr.render(mx, my);

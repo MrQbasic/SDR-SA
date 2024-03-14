@@ -14,7 +14,7 @@ private:
     bool hasSign = false;
 
 public:
-    NumberSelector(long long max, long long min, long long* val);
+    NumberSelector(long long max, long long min, long long* val, const char* title);
 
     //interface
     void render(int posX, int posY, int my, int mx) override;
