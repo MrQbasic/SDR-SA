@@ -19,7 +19,7 @@ private:
     Color col;
     //scanner for spectrum
     SDR* sdr;
-    int     type           = 0;             // 0:avg 1:max
+    int     type           = 1;             // 0:avg 1:max
     double* spectrumVal    = nullptr;
     int*    spectrumValCnt = nullptr;
     int     spectrumSize   = 0;

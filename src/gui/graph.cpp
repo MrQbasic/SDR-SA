@@ -1,6 +1,7 @@
 #include <gui/graph.hpp>
 #include <tools/freq.hpp>
 #include <iostream>
+#include <math.h>
 
 int Graph::posX = 0;
 int Graph::posY = 0;
@@ -89,18 +90,6 @@ void Graph::render(){
     //check if the cfg changed
     if(globalConfigID != this->configID){
         this->configID = globalConfigID;
-        //is we need to deleate the old arrays
-        if(this->spectrumVal != nullptr){
-            delete this->spectrumVal;
-            delete this->spectrumValCnt;
-        }
-        //create new arrays and reset them
-        this->spectrumVal    = new double[width];
-        this->spectrumValCnt = new int[width];
-        for(int i=0; i<width; i++){
-            this->spectrumVal[i]    = 0.0;
-            this->spectrumValCnt[i] = 1;
-        }
         //check if old scanner has to be killed
         if(this-> scanner != nullptr){
             delete this->scanner;
@@ -108,7 +97,7 @@ void Graph::render(){
         }
         //create new scanner
         this->scanner = new Scanner(
-            this->sdr, this->spectrumVal, this->spectrumValCnt, this->type,
+            this->sdr, &this->spectrumVal, &this->spectrumValCnt, this->type,
             width, freqStart, freqEnd);
         this->spectrumSize = width;
     }
@@ -118,9 +107,9 @@ void Graph::render(){
     for(int x=1; x<width; x++){
         DrawLine(
             posX+x-1,
-            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x-1]/spectrumValCnt[x-1], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x-1]/abs(spectrumValCnt[x-1]), dbTop, dbBottom), 
             posX+x, 
-            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x]/spectrumValCnt[x], dbTop, dbBottom), 
+            zeroPosY-pxPerDb*clampDouble(this->spectrumVal[x]/abs(spectrumValCnt[x]), dbTop, dbBottom), 
             this->col
         );
     }

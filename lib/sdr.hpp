@@ -10,5 +10,5 @@ public:
     //return val set / factor = neg or pos
     virtual int changeGain(int factor) = 0;
     //coppysize = -1 -> all
-    virtual void getFFT(double* buffer, int size, int copySize, long long centerFreq){};
+    virtual void getFFT(double* bufVal, int* bufValCnt, int bufSize, int bufType, long long bufStartFreq, long long bufEndFreq, long long centerFreq){};
 };

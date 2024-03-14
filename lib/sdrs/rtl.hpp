@@ -68,7 +68,7 @@ public:
         *amount += num;
     }
 
-    void getFFT(double* buffer, int size, int copySize, long long centerFreq){
+    void getFFT(double* bufVal, int* bufValCnt, int bufSize, int bufType, long long bufStartFreq, long long bufEndFreq, long long centerFreq){
         //set freq
         rtlsdr_set_center_freq(this->rtlsdr, (uint32_t) centerFreq - (uint32_t) getSampleRate());
         //read samples
@@ -82,26 +82,43 @@ public:
         //run fft
         fftw_execute(fftplan);
         //make it fit into the output buffer
-        for(int i=0; i<size; i++){
-            //find from where to where the int the buffer we need to work
-            int batchStart = (int) ((double)  i      / size * (SampleBufferSize/2));
-            int batchEnd   = (int) ((double) (i + 1) / size * (SampleBufferSize/2));
-            //calc avg magnitude in db
-            double avgMag = 0.0;
-            for (int j=batchStart; j<batchEnd; j++) {
-                double magnitude = sqrt(SamplesOutput[j][0] * SamplesOutput[j][0] + SamplesOutput[j][1] * SamplesOutput[j][1]);
-                avgMag += magnitude;
+        long long sampleRate = this->getSampleRate();
+        int fftSize = SampleBufferSize/2;
+        for(int i=0; i<fftSize; i++){
+            //calc val for position
+            double magnitude = sqrt(SamplesOutput[i][0] * SamplesOutput[i][0] + SamplesOutput[i][1] * SamplesOutput[i][1]);
+            double db = (10 * log10(magnitude)) -150; 
+            if(i == 0) continue;
+            //buffer index
+            long long freqRelativeToCenter = ((double)(((i+fftSize/2)%fftSize)-fftSize/2)/(double)(fftSize-1))*sampleRate;
+            long long freqOfSampleRelativeToStart = centerFreq + freqRelativeToCenter - bufStartFreq;
+            double posRelative = ((double) freqOfSampleRelativeToStart - sampleRate) / (double)(bufEndFreq-bufStartFreq);
+            int index = bufSize * posRelative;
+            if(index < 0 || index >= bufSize){
+                continue;
             }
-            avgMag /= (batchEnd-batchStart);
-            //calculate output db
-            double db = (10 * log10(avgMag)) - 150;
-            //check if we need to skip
-            int index = (i+size/2)%size;
-            if(index > copySize-1 && copySize != -1) continue;
-            //wire to output
-            buffer[index] = db;
+            //-
+            switch(bufType){
+                default:
+                case 0:
+                    if(bufValCnt[index] < 0){
+                        bufVal[index] = db;
+                        bufValCnt[index] = 1;
+                    }else{
+                        bufVal[index] += db;
+                        bufValCnt[index] ++;
+                    }
+                    break;
+                case 1:
+                    if(bufValCnt[index] < 0){
+                        bufVal[index] = db;
+                        bufValCnt[index] = 1;
+                    }else{
+                        if(db > bufVal[index]) bufVal[index] = db;
+                    }
+                    break;
+            }
         }
-
     }
 
     int changeGain(int factor){

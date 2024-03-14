@@ -17,10 +17,10 @@
 
 #include <string>
  
-long long freqStart =  80 * 1000 * 1000; //80MHZ
-long long freqEnd   = 1700 * 1000 * 1000; //115MHZ
-long long dbTop = 10;
-long long dbBottom = -100;
+long long freqStart =  90 * 1000 * 1000; //80MHZ
+long long freqEnd   = 100 * 1000 * 1000; //115MHZ
+long long dbTop = -70;
+long long dbBottom = -150;
 
 bool paused = false;
 
