@@ -1,5 +1,6 @@
 #include <gui/graph.hpp>
 #include <tools/freq.hpp>
+#include <gui/def.hpp>
 #include <iostream>
 #include <math.h>
 
@@ -113,4 +114,27 @@ void Graph::render(){
             this->col
         );
     }
+}
+
+
+void Graph::renderCursor(int mx, int my){
+    bool outside = mx < posX || my < posY || mx > posX+width || my > posY+height;
+    //render cursor lines
+    if(!outside){
+        DrawLine(posX, my, posX+width, my,  GRAPH_CURSOR_COLOR);
+        DrawLine(mx, posY, mx, posY+height, GRAPH_CURSOR_COLOR);
+    }
+    //draw text
+    if(outside){
+        DrawText(TextFormat("F:  -"), posX+GRAPH_CURSOR_PADDING, posY+GRAPH_CURSOR_PADDING  , GRAPH_CURSOR_TEXT_SIZE, GRAPH_CURSOR_COLOR);
+        DrawText(TextFormat("DB: -"), posX+GRAPH_CURSOR_PADDING, posY+GRAPH_CURSOR_PADDING*3, GRAPH_CURSOR_TEXT_SIZE, GRAPH_CURSOR_COLOR);
+    }else{
+        long long freq = (double)(mx-posX)/(double)width *(freqEnd-freqStart)+freqStart;
+        double db      = (double)(my-posY)/(double)height*(dbTop-dbBottom)-dbTop;
+        db*=-1;
+
+        DrawText(TextFormat("F:  %lld", freq), posX+GRAPH_CURSOR_PADDING, posY+GRAPH_CURSOR_PADDING  , GRAPH_CURSOR_TEXT_SIZE, GRAPH_CURSOR_COLOR);
+        DrawText(TextFormat("DB: %.1f", db),   posX+GRAPH_CURSOR_PADDING, posY+GRAPH_CURSOR_PADDING*3, GRAPH_CURSOR_TEXT_SIZE, GRAPH_CURSOR_COLOR);
+    }
+    
 }

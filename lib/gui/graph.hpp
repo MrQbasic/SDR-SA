@@ -19,7 +19,7 @@ private:
     Color col;
     //scanner for spectrum
     SDR* sdr;
-    int     type           = 1;             // 0:avg 1:max
+    int     type           = 0;             // 0:avg 1:max
     double* spectrumVal    = nullptr;
     int*    spectrumValCnt = nullptr;
     int     spectrumSize   = 0;
@@ -36,6 +36,8 @@ public:
     static void setDimensions(int v_posX, int v_posY, int v_width, int v_height, double v_dbTop, double v_dbBottom, long long v_freqStart, long long v_freqEnd);
 
     static void renderGrapBackground();
+
+    static void renderCursor(int mx, int my);
 
     //expected to have as much data points as px in width
     void render();

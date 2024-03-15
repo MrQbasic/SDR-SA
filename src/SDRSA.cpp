@@ -145,6 +145,8 @@ int main(){
             graphs[i]->render();
         }
     
+        Graph::renderCursor(mx, my);
+
         
         //render Menus
         m_Dim.render(mx, my);
