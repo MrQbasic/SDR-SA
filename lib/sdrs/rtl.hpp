@@ -68,7 +68,7 @@ public:
         *amount += num;
     }
 
-    void getFFT(double* bufVal, int* bufValCnt, int bufSize, int bufType, long long bufStartFreq, long long bufEndFreq, long long centerFreq){
+    void getFFT(double* bufVal, int* bufValCnt, int bufSize, int bufType, long long bufStartFreq, long long bufEndFreq, long long centerFreq) override{
         //set freq
         rtlsdr_set_center_freq(this->rtlsdr, (uint32_t) centerFreq - (uint32_t) getSampleRate());
         //read samples
@@ -87,7 +87,7 @@ public:
         for(int i=0; i<fftSize; i++){
             //calc val for position
             double magnitude = sqrt(SamplesOutput[i][0] * SamplesOutput[i][0] + SamplesOutput[i][1] * SamplesOutput[i][1]);
-            double db = (10 * log10(magnitude)) -150; 
+            double db = (20 * log10(magnitude)) -140; 
             if(i == 0) continue;
             //buffer index
             long long freqRelativeToCenter = ((double)(((i+fftSize/2)%fftSize)-fftSize/2)/(double)(fftSize-1))*sampleRate;
@@ -145,11 +145,6 @@ public:
         }
         //return selected gain val
         return(GainSettings[gainIndex]);
-    }
-
-private:
-    void dataCallback(){
-
     }
 
 private:

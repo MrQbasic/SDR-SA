@@ -2,7 +2,8 @@
 
 #include <string>
 #include <gui/setting.hpp>
-#include <sdrs/rtl.hpp>
+#include <sdr.hpp>
+#include <gui/graph.hpp>
 #include <vector>
 
 
@@ -26,7 +27,7 @@ private:
 public:
 
     MenuFrame(std::vector<Setting*> settings);
-    MenuFrame(RTLSDR* sdr);
+    MenuFrame(SDR* sdr, Graph* graph);
     
     void render(int my, int mx);
     void action(int my, int mx, int button);

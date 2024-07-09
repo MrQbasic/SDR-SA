@@ -138,3 +138,13 @@ void Graph::renderCursor(int mx, int my){
     }
     
 }
+
+//types:
+//  0 - Avg
+//  1 - Max
+void Graph::toggleType(int type){
+    int bit = 1 << type;
+    this->type ^= bit;
+    this->configID--;
+    std::cout << "IS NOW: " << this->type << std::endl;
+}

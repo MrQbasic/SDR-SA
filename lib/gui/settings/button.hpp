@@ -9,33 +9,23 @@
 
 class Button : public Setting {
 private:
-    std::function<void()> cb;
+    std::function<void()> cb = nullptr;
     const char* text;
     int width;
     int heigth = SETTING_HEIGHT;
-    bool latching;
     bool* state;
 
-    Color* textcols;
+    Color* textcols = nullptr;
     int* colstate;
 
 public:
-    
-    Button(const char* text, bool* state, const char* title):Setting(title){
-        this->latching = true;
-        this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
-        this->state = state;
-        this->text = text;
-        this->textcols = nullptr;
-    }
-
-    Button(const char* text, std::function<void()> callBack, const char* title):Setting(title){
-        this->latching = false;
+    Button(const char* text, std::function<void()> callBack, bool* state, const char* title):Setting(title){
         this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
         this->cb = callBack;
+        this->state = state;
         this->text = text;
-        this->textcols = nullptr;
     }
+
 
     void setupColorText(Color* cols, int* colstate){
         this->textcols = cols;
@@ -47,7 +37,7 @@ public:
         if(mx > posX && mx < posX+width && my > posY && my < posY+heigth){
             DrawRectangle(posX, posY, width, heigth, COLOR_HOVER);
         }else{
-            if(latching){
+            if(state != nullptr){
                 if(*state){
                     DrawRectangle(posX, posY, width, heigth, COLOR_SELECTED);
                 }else{
@@ -63,9 +53,10 @@ public:
 
     void action(int posX, int posY, int my, int mx, int button) override{
         if(mx > posX && mx < posX+width && my > posY && my < posY+heigth){
-            if(latching){
+            if(state != nullptr){
                 *state ^= 1;
-            }else{
+            }
+            if(cb != nullptr){
                 cb();
             }
         }

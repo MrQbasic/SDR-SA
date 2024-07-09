@@ -114,11 +114,11 @@ void MenuFrame::setPosY(int y) {this->posY = y;}
 
 
 
-MenuFrame::MenuFrame(RTLSDR* sdr){
+MenuFrame::MenuFrame(SDR* sdr, Graph* graph){
     //setup settings
     //-disconnect button
     auto discon = [sdr](){std::cout << "WHY TF IS THE DISCON CALLED ?" << std::endl;sdr->state=2;};
-    this->settings.push_back(new Button("Disconnect", discon, "\n"));
+    this->settings.push_back(new Button("Disconnect", discon, nullptr, "\n"));
     //-gain settings
     char* gainText = new char[100];
     double gain = (double) sdr->changeGain(-10000) / 10.0;
@@ -136,10 +136,20 @@ MenuFrame::MenuFrame(RTLSDR* sdr){
 
     };
     std::vector<Setting*> gainSetting;
-    gainSetting.push_back(new Button("+",incGain, "\n"));
-    gainSetting.push_back(new Button("-",decGain, "\n"));
+    gainSetting.push_back(new Button("+",incGain, nullptr, "\n"));
+    gainSetting.push_back(new Button("-",decGain, nullptr, "\n"));
     gainSetting.push_back(new Text(gainText,"\n"));
     this->settings.push_back(new inOneLine(gainSetting, "Gain:"));
+    //Setup graph type settings
+    std::vector<Setting*> typeSetting;
+    bool** graphTypeState = new bool*[2] {new bool{true}, new bool{false}};
+    auto typeToggleAvg = [graph, graphTypeState](){graph->toggleType(0);};
+    auto typeToggleMax = [graph, graphTypeState](){graph->toggleType(1);};
+    typeSetting.push_back(new Button("Avg", typeToggleAvg, graphTypeState[0], "\n"));
+    typeSetting.push_back(new Button("Max", typeToggleMax, graphTypeState[1], "\n"));
+    this->settings.push_back(new inOneLine(typeSetting, "Graph:"));
+
+
     //auto find width and height
     this->width = 0; 
     this->height = 0;

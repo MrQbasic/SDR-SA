@@ -84,6 +84,8 @@
         "streambuf": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "structs.h": "c",
+        "constants.h": "c"
     }
 }

@@ -39,6 +39,9 @@ public:
 
     static void renderCursor(int mx, int my);
 
+    //starts only with Avg on
+    void toggleType(int type);
+
     //expected to have as much data points as px in width
     void render();
 };

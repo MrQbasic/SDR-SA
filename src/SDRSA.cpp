@@ -12,24 +12,23 @@
 
 #include <sdr.hpp>
 #include <sdrs/rtl.hpp>
+#include <sdrs/miri.hpp>
 
 #include <iostream>
 #include <vector>
 #include <string>
  
-long long freqStart =  90 * 1000 * 1000; //80MHZ
-long long freqEnd   = 100 * 1000 * 1000; //115MHZ
-long long dbTop = -70;
-long long dbBottom = -150;
-
-bool paused = false;
+long long freqStart =  85 * 1000 * 1000; //80MHZ
+long long freqEnd   = 115 * 1000 * 1000; //115MHZ
+long long dbTop = -30;
+long long dbBottom = -100;
 
 int main(){
     //init GX
     InitWindow(1280, 720, "SDR - SA");
     SetTargetFPS(60);
 
-    //Gerneal Dimension Settings) spacer = 0
+    //General Dimension Settings) spacer = 0
     std::vector<Setting*> settingsDimension;
     settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqStart, "START:"));
     settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqEnd,   "END:"));
@@ -38,11 +37,23 @@ int main(){
     MenuFrame f_Dim = MenuFrame(settingsDimension);
     MenuEntry m_Dim = MenuEntry("SPECTRUM", &f_Dim);
 
+    //General Settings
+    std::vector<Setting*> settingsGeneral;
+    //-render Cursor
+    bool renderCursor = false;
+    settingsGeneral.push_back(new Button("CURSOR", nullptr, &renderCursor, "\n"));
+    MenuEntry menuGeneral = MenuEntry("SETTING", new MenuFrame(settingsGeneral)); 
 
     //scan for SDRs
-    int sdrCnt = 0;
-    const char** sdrNames;
-    RTLSDR::getSDRs(&sdrCnt, &sdrNames);
+    int sdrCntRtl = 0;
+    const char** sdrNamesRtl;
+    RTLSDR::getSDRs(&sdrCntRtl, &sdrNamesRtl);
+    int sdrCntMiri = 0;
+    const char** sdrNamesMiri;
+    MIRISDR::getSDRs(&sdrCntMiri, &sdrNamesMiri);
+
+    int sdrCnt = sdrCntMiri + sdrCntRtl;
+
 
     //main menu
     bool* sdrSelect       = new bool[sdrCnt];
@@ -59,22 +70,33 @@ int main(){
     Graph** graphs = new Graph*[sdrCnt];
 
     for(int i=0; i<sdrCnt; i++){
-        sdrs[i] = new RTLSDR(i);
+        //ajust index
+        int localIndex = i;
+        const char** sdrNames;
+        if(i < sdrCntRtl){
+            sdrs[i] = new RTLSDR(i);
+            sdrNames = sdrNamesRtl;
+        }else{
+            localIndex -= sdrCntRtl;
+            sdrs[i] = new MIRISDR(i-sdrCntRtl);
+            sdrNames = sdrNamesMiri;
+        }
         graphs[i] = new Graph(graphColors[i], sdrs[i]);
         MenuFrame** subsubframes = new MenuFrame*[2];
         //construct SDR selector
         sdrSelect[i] = false;
         sdrSelectBuffer[i] = false;
-        Button* sdrButton = new Button(sdrNames[i], &(sdrSelect[i]), "\n");
+        Button* sdrButton = new Button(sdrNames[localIndex], nullptr, &(sdrSelect[i]), "\n");
         sdrButton->setupColorText(sdrButtonColors, &(sdrs[i]->state));
         settingsSdr.push_back(sdrButton);
         //construct sdr connect menu
         auto sdrPrt = sdrs[i];
-        auto conFunction = [sdrPrt, subsubframes](){
+        auto graphPrt = graphs[i];
+        auto conFunction = [sdrPrt, graphPrt, subsubframes](){
             sdrPrt->init();
-            subsubframes[1] = new MenuFrame((RTLSDR*)sdrPrt);   // the other menu is created when the init is called
+            subsubframes[1] = new MenuFrame(sdrPrt, graphPrt);   // the other menu is created when the init is called
         };
-        std::vector<Setting*> connectSettings = {new Button("Connect",conFunction, "\n")};
+        std::vector<Setting*> connectSettings = {new Button("Connect",conFunction, nullptr, "\n")};
         //SubSubmenu
         subsubframes[0] = new MenuFrame(connectSettings);
         f_Sdr_submenu[i] = new ConditionalMenuFrame(subsubframes,2,&(sdrs[i]->state));
@@ -83,7 +105,8 @@ int main(){
     
 
     //SDR selector Menu
-    settingsSdr.insert(settingsSdr.begin(), new Button("PAUSE ALL", &paused, "\n"));
+    //bool paused = false;
+    //settingsSdr.insert(settingsSdr.begin(), new Button("PAUSE ALL", &paused, "\n"));
     MenuFrame* f_Sdr = new MenuFrame(settingsSdr);
     MenuEntry m_Sdr = MenuEntry("SDR", f_Sdr);
 
@@ -110,14 +133,16 @@ int main(){
         if(IsMouseButtonPressed(0)){
             m_Dim.action(mx, my, 0);
             m_Sdr.action(mx, my, 0);
+            menuGeneral.action(mx, my, 0);
         }
         if(IsMouseButtonPressed(1)){
             m_Dim.action(mx, my, 1);
             m_Sdr.action(mx, my, 1);
+            menuGeneral.action(mx, my, 1);
         }
-        if(IsKeyPressed(KEY_SPACE)){
-            paused ^= 1;
-        }
+        //if(IsKeyPressed(KEY_SPACE)){
+        //   paused ^= 1;
+        //}
         
         //sdrmenu submenu
         int sdrSubmenuChanges = 0;
@@ -144,13 +169,15 @@ int main(){
         for(int i=0; i<sdrCnt; i++){
             graphs[i]->render();
         }
-    
-        Graph::renderCursor(mx, my);
-
+        
+        if(renderCursor){
+            Graph::renderCursor(mx, my);
+        }
         
         //render Menus
         m_Dim.render(mx, my);
         m_Sdr.render(mx, my);
+        menuGeneral.render(mx, my);
         
         //fps counter
         DrawText(TextFormat("%d FPS", GetFPS()), 500, 5, 20, RED);
