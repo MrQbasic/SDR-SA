@@ -10,6 +10,9 @@
 #include <gui/settings/numberSelector.hpp>
 #include <gui/settings/submenu.hpp>
 
+//#include <gui/menu/sdr.hpp>
+#include <gui/menus/graph.hpp>
+
 #include <sdr.hpp>
 #include <sdrs/rtl.hpp>
 #include <sdrs/miri.hpp>
@@ -17,11 +20,13 @@
 #include <iostream>
 #include <vector>
 #include <string>
- 
+
+//default values 
 long long freqStart =  85 * 1000 * 1000; //80MHZ
 long long freqEnd   = 115 * 1000 * 1000; //115MHZ
 long long dbTop = -30;
 long long dbBottom = -100;
+
 
 int main(){
     //init GX
@@ -34,9 +39,10 @@ int main(){
     settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqEnd,   "END:"));
     settingsDimension.push_back(new NumberSelector(99,          -150, &dbTop,     "DB TOP:"));
     settingsDimension.push_back(new NumberSelector(99,          -150, &dbBottom,  "DB BOTTOM:"));
-    MenuFrame f_Dim = MenuFrame(settingsDimension);
-    MenuEntry m_Dim = MenuEntry("SPECTRUM", &f_Dim);
+    //MenuFrame f_Dim = MenuFrame(settingsDimension);
+    //MenuEntry m_Dim = MenuEntry("SPECTRUM", &f_Dim);
 
+    /*
     //General Settings
     std::vector<Setting*> settingsGeneral;
     //-render Cursor
@@ -103,24 +109,38 @@ int main(){
         settingsSdr.push_back(new Submenu(f_Sdr_submenu[i], &sdrSelect[i], "\n"));
     }
     
+    */
 
     //SDR selector Menu
     //bool paused = false;
     //settingsSdr.insert(settingsSdr.begin(), new Button("PAUSE ALL", &paused, "\n"));
-    MenuFrame* f_Sdr = new MenuFrame(settingsSdr);
-    MenuEntry m_Sdr = MenuEntry("SDR", f_Sdr);
+    //MenuFrame* f_Sdr = new MenuFrame(settingsSdr);
+    //MenuEntry m_Sdr = MenuEntry("SDR", f_Sdr);
+
+    //Menu_SDR menuSDR = Menu_SDR();
+    //menuSDR.updateSDRs();
+
+    //m_Sdr = *menuSDR.getMenuEntry();
 
     
     //calculate position of submenus
-    int sdrMenuPosX = f_Sdr->getPosX();
-    for(int i=0; i<sdrCnt; i++){
-        if( sdrMenuPosX > GetScreenWidth()/2){
-            f_Sdr_submenu[i]->setPosX(sdrMenuPosX - f_Sdr_submenu[i]->getWidth());
-        }else{
-            f_Sdr_submenu[i]->setPosX(sdrMenuPosX + f_Sdr->getWidth());
-        }
-    }
+    //int sdrMenuPosX = f_Sdr->getPosX();
+    //for(int i=0; i<sdrCnt; i++){
+    //    if( sdrMenuPosX > GetScreenWidth()/2){
+    //        f_Sdr_submenu[i]->setPosX(sdrMenuPosX - f_Sdr_submenu[i]->getWidth());
+    //    }else{
+    //        f_Sdr_submenu[i]->setPosX(sdrMenuPosX + f_Sdr->getWidth());
+    //    }
+    //}
 
+
+
+    Menu_Graph* graph = new Menu_Graph();
+
+    std::vector<Graph*>* graphs;
+
+
+    //main render Loop
     while(!WindowShouldClose()){
         BeginDrawing();
         //
@@ -131,54 +151,59 @@ int main(){
         
         //check for an action
         if(IsMouseButtonPressed(0)){
-            m_Dim.action(mx, my, 0);
-            m_Sdr.action(mx, my, 0);
-            menuGeneral.action(mx, my, 0);
+            //m_Dim.action(mx, my, 0);
+            //m_Sdr.action(mx, my, 0);
+            //menuGeneral.action(mx, my, 0);
+            graph->action(mx, my, 0);
         }
         if(IsMouseButtonPressed(1)){
-            m_Dim.action(mx, my, 1);
-            m_Sdr.action(mx, my, 1);
-            menuGeneral.action(mx, my, 1);
+            //m_Dim.action(mx, my, 1);
+            //m_Sdr.action(mx, my, 1);
+            //menuGeneral.action(mx, my, 1);
         }
         //if(IsKeyPressed(KEY_SPACE)){
         //   paused ^= 1;
         //}
         
         //sdrmenu submenu
-        int sdrSubmenuChanges = 0;
-        for(int i=0; i<sdrCnt; i++){
-            if(sdrSelect[i])sdrSubmenuChanges++;
-        }
-        if(sdrSubmenuChanges > 1){
-            for(int i=0; i<sdrCnt; i++){
-                sdrSelect[i] ^= sdrSelectBuffer[i];
-            }
-        }
-        for(int i=0; i<sdrCnt; i++){
-            sdrSelectBuffer[i] = sdrSelect[i];
-        }
+        //int sdrSubmenuChanges = 0;
+        //for(int i=0; i<sdrCnt; i++){
+        //    if(sdrSelect[i])sdrSubmenuChanges++;
+        //}
+        //if(sdrSubmenuChanges > 1){
+        //    for(int i=0; i<sdrCnt; i++){
+        //        sdrSelect[i] ^= sdrSelectBuffer[i];
+        //    }
+        //}
+        //for(int i=0; i<sdrCnt; i++){
+        //    sdrSelectBuffer[i] = sdrSelect[i];
+        //}
 
         //render background
         ClearBackground(BLACK);
         Graph::setDimensions(GRAPH_PADDING, GRAPH_PADDING+MENU_Y_START+MENU_HEIGHT, sw-GRAPH_PADDING*2, sh-GRAPH_PADDING*2-MENU_HEIGHT-MENU_Y_START, (double) dbTop, (double) dbBottom, freqStart, freqEnd);
-        MenuEntry::renderBG();
+        Menu::renderHeader();
         Graph::renderGrapBackground();
 
-        
+        graphs = graph->getGraphs();
+
+
+
         //render graphs
-        for(int i=0; i<sdrCnt; i++){
-            graphs[i]->render();
-        }
-        
-        if(renderCursor){
+        //for(int i=0; i<sdrCnt; i++){
+        //    graphs[i]->render();
+        //}
+        //
+        if(true){
             Graph::renderCursor(mx, my);
         }
         
         //render Menus
-        m_Dim.render(mx, my);
-        m_Sdr.render(mx, my);
-        menuGeneral.render(mx, my);
-        
+        //m_Dim.render(mx, my);
+        //m_Sdr.render(mx, my);
+        //menuGeneral.render(mx, my);
+        graph->render(mx, my);
+
         //fps counter
         DrawText(TextFormat("%d FPS", GetFPS()), 500, 5, 20, RED);
 

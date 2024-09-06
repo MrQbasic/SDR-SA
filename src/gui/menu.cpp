@@ -14,41 +14,42 @@
 
 #include <raylib.h>
 
-int MenuEntry::idCnt = 0;
-int MenuEntry::selectedId = -1;
-int MenuEntry::xPosCnt = 0;
+int Menu::idCnt = 0;
+int Menu::selectedId = -1;
+int Menu::xPosCnt = 0;
 
-MenuEntry::MenuEntry(const char* Title, MenuFrame* frame){
+Menu::Menu(const char* Title, i_MenuFrame** frame){
+    //save input ptrs
     this->Title = Title;
     this->frame = frame;
     this->xPos  = xPosCnt;
-    
-    this->frame->setPosX(this->xPos);
-    this->frame->setPosY(MENU_Y_START+MENU_HEIGHT);
-
+    //calculate where the nex setting needs to render
     xPosCnt += MeasureText(Title, MENU_TEXT_SIZE);
     this->width = xPosCnt - xPos;
     xPosCnt += MENU_SPACE + 2 * MENU_TEXT_X_OFFSET;
     this->ID = ++idCnt;
 }
 
-void MenuEntry::renderBG(){
+void Menu::renderHeader(){
     int sw = GetScreenWidth();
     DrawRectangle(MENU_X_START, MENU_Y_START, sw, MENU_HEIGHT, MENU_BG_COLOR);
 }
 
-void MenuEntry::render(int mx, int my){
+void Menu::render(int mx, int my){
+    //tell the frame where it has to render
+    (*(this->frame))->setPosX(this->xPos);
+    (*(this->frame))->setPosY(MENU_Y_START+MENU_HEIGHT);
+    //check for hover / select status
     bool hover    = (mx > MENU_X_START+this->xPos) && (mx < MENU_X_START+this->width+this->xPos) && (my > MENU_Y_START) && (my < MENU_Y_START + MENU_HEIGHT);
     bool selected = (selectedId == this->ID);
     DrawRectangle(MENU_X_START + xPos, MENU_Y_START, this->width + 2 * MENU_TEXT_X_OFFSET, MENU_HEIGHT, hover ? MENU_COLOR_HOVER : (selected ? MENU_COLOR_SELECTED : MENU_COLOR));
     DrawText(this->Title, MENU_X_START + xPos + MENU_TEXT_X_OFFSET, MENU_Y_START + MENU_TEXT_Y_OFFSET, MENU_TEXT_SIZE, MENU_TEXT_COLOR);
     if(!selected) return;
     //if current menu is selected render Frame
-    this->frame->render(my, mx);
-
+    (*(this->frame))->render(my, mx);
 }
 
-void MenuEntry::action(int mx, int my, int button){
+void Menu::action(int mx, int my, int button){
     bool overEntry = (mx > MENU_X_START+this->xPos) && (mx < MENU_X_START+this->width+this->xPos) && (my > MENU_Y_START) && (my < MENU_Y_START + MENU_HEIGHT);
     if(overEntry){
         if(selectedId == this->ID){
@@ -59,7 +60,7 @@ void MenuEntry::action(int mx, int my, int button){
     }
     //check if we need to pass the action check down to the frame //TODO: optim check if mouse if over frame firstly ?
     if(selectedId == this->ID){
-        this->frame->action(my, mx, button);
+        (*(this->frame))->action(my, mx, button);
     }
 }
 

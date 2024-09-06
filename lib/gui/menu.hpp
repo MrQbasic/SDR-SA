@@ -73,7 +73,7 @@ public:
 };
 
 
-class MenuEntry{
+class Menu{
 private:
     //id for menu selection
     static int selectedId;
@@ -85,20 +85,15 @@ private:
     int width;
     //
     const char* Title;
-    MenuFrame* frame;
+    i_MenuFrame** frame;
 
 
 public:
-    MenuEntry(const char* Title, MenuFrame* frame);
+    Menu(const char* Title, i_MenuFrame** frame);
 
     void render(int mx, int my);
 
     void action(int mx, int my, int button);
 
-    static void renderBG();
+    static void renderHeader();
 };
-
-
-
-
-
