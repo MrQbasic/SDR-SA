@@ -6,12 +6,12 @@ class Menu_Graph : public Menu {
 public:
     Menu_Graph();
     std::vector<Graph*>* getGraphs();
+    void update() override;
 
 private:
     void addGraph();
-    void updateFrame();
 
-private:
+public:
     /*
     So you need to make the graphs actually be the fft lines
     they need an on off setting
@@ -36,10 +36,12 @@ private:
     BLADE SUPPORT
     */
 
-   std::vector<Graph*> graphs;
+    std::vector<Graph*> graphs;
 
     i_MenuFrame* frame;
     std::vector<Setting*> settings;
 
-    bool inSelectSubmenu;
+    bool shouldUpdateFrame = false;
+
+    int selectedSubmenu = 0;
 };

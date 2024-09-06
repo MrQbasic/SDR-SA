@@ -37,7 +37,6 @@ public:
     int getHeight();
     int getPosX();
     int getPosY();
-
 };
 
 
@@ -94,6 +93,8 @@ public:
     void render(int mx, int my);
 
     void action(int mx, int my, int button);
+
+    virtual void update();
 
     static void renderHeader();
 };

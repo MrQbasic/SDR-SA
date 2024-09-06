@@ -202,6 +202,7 @@ int main(){
         //m_Dim.render(mx, my);
         //m_Sdr.render(mx, my);
         //menuGeneral.render(mx, my);
+        graph->update();
         graph->render(mx, my);
 
         //fps counter

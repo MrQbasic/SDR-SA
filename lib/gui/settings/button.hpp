@@ -19,13 +19,18 @@ private:
     int* colstate;
 
 public:
-    Button(const char* text, std::function<void()> callBack, bool* state, const char* title):Setting(title){
+    Button(char* text, std::function<void()> callBack, bool* state, const char* title):Setting(title){
         this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
         this->cb = callBack;
         this->state = state;
         this->text = text;
     }
-
+    Button(const char* text, std::function<void()> callBack, bool* state, const char* title):Setting(title){
+        this->width = MeasureText(text, SETTING_HEIGHT-2*SETTING_PADDING) + 2*SETTING_PADDING;
+        this->cb = callBack;
+        this->state = state;
+        this->text = (char*) text;
+    }
 
     void setupColorText(Color* cols, int* colstate){
         this->textcols = cols;

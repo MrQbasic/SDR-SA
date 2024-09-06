@@ -35,10 +35,15 @@ void Menu::renderHeader(){
     DrawRectangle(MENU_X_START, MENU_Y_START, sw, MENU_HEIGHT, MENU_BG_COLOR);
 }
 
+void Menu::update(){
+    std::cout << "TF is this running ?" << std::endl;
+}
+
 void Menu::render(int mx, int my){
     //tell the frame where it has to render
-    (*(this->frame))->setPosX(this->xPos);
-    (*(this->frame))->setPosY(MENU_Y_START+MENU_HEIGHT);
+    MenuFrame* f = (MenuFrame*) *(this->frame);
+    f->setPosX(this->xPos);
+    f->setPosY(MENU_Y_START+MENU_HEIGHT);
     //check for hover / select status
     bool hover    = (mx > MENU_X_START+this->xPos) && (mx < MENU_X_START+this->width+this->xPos) && (my > MENU_Y_START) && (my < MENU_Y_START + MENU_HEIGHT);
     bool selected = (selectedId == this->ID);

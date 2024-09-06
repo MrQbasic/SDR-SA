@@ -13,7 +13,7 @@ long long Graph::freqEnd = 0;
 double Graph::dbBottom = 0;
 double Graph::dbTop = 0;
 int Graph::globalConfigID = 0;
-
+int Graph::ID = 0;
 
 void Graph::setDimensions(int v_posX, int v_posY, int v_width, int v_height, double v_dbTop, double v_dbBottom, long long v_freqStart, long long v_freqEnd){
     //only check on those relevant for the scanner not only for rendering
@@ -147,4 +147,9 @@ void Graph::toggleType(int type){
     this->type ^= bit;
     this->configID--;
     std::cout << "IS NOW: " << this->type << std::endl;
+}
+
+
+char* Graph::getName(){
+    return this->name;
 }

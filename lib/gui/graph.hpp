@@ -25,12 +25,17 @@ private:
     int     spectrumSize   = 0;
     bool    scannerRunning = false;
     Scanner* scanner       = nullptr;
+    //for menu
+    static int ID;
+    char* name;
 
 public:
 
     Graph(Color col, SDR* sdr){
         this->col = col;
         this->sdr = sdr;
+        sprintf(this->name, "%d New Graph", ID);
+        ID++;
     }
 
     static void setDimensions(int v_posX, int v_posY, int v_width, int v_height, double v_dbTop, double v_dbBottom, long long v_freqStart, long long v_freqEnd);
@@ -41,6 +46,9 @@ public:
 
     //starts only with Avg on
     void toggleType(int type);
+
+
+    char* getName();
 
     //expected to have as much data points as px in width
     void render();
