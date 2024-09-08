@@ -1,25 +1,10 @@
-#include <raylib.h>
-
-#include <gui/menu.hpp>
-#include <gui/setting.hpp>
-#include <gui/graph.hpp>
-#include <gui/def.hpp>
-
-#include <gui/settings/button.hpp>
-#include <gui/settings/dummy.hpp>
-#include <gui/settings/numberSelector.hpp>
-#include <gui/settings/submenu.hpp>
-
-//#include <gui/menu/sdr.hpp>
-#include <gui/menus/graph.hpp>
-
-#include <sdr.hpp>
-#include <sdrs/rtl.hpp>
-#include <sdrs/miri.hpp>
+#include <ImGui/imgui.h>
+#include <ImGui/imgui_impl_glfw.h>
+#include <ImGui/imgui_impl_opengl3.h>
+#include <GLFW/glfw3.h>
+#include <GLES2/gl2.h>
 
 #include <iostream>
-#include <vector>
-#include <string>
 
 //default values 
 long long freqStart =  85 * 1000 * 1000; //80MHZ
@@ -29,16 +14,81 @@ long long dbBottom = -100;
 
 
 int main(){
-    //init GX
-    InitWindow(1280, 720, "SDR - SA");
-    SetTargetFPS(60);
+    bool error = glfwInit();
+    //create window
+    GLFWwindow* window = glfwCreateWindow(200, 200, "SDR-SA", 0, 0);
+    if(!window || !error){
+        std::cout << "Error: Couldn't init GLFW!" << std::endl;
+    }
+    // Decide GL+GLSL versions
+    #if defined(IMGUI_IMPL_OPENGL_ES2)
+        // GL ES 2.0 + GLSL 100
+        const char* glsl_version = "#version 100";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    #elif defined(__APPLE__)
+        // GL 3.2 + GLSL 150
+        const char* glsl_version = "#version 150";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    #else
+        // GL 3.0 + GLSL 130
+        const char* glsl_version = "#version 130";
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+        //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    #endif
+
+    glfwMakeContextCurrent(window);
+    //imgui contxt
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    //renderer
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    
+
+    ImGui::StyleColorsDark();
+
+
+    while(!glfwWindowShouldClose(window)){
+        glfwPollEvents();
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
+        {
+            ImGui_ImplGlfw_Sleep(10);
+            continue;
+        }
+        
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+
+
+        //Rendering of the current frame
+        ImGui::Render();
+        int sw, sh;
+        glfwGetFramebufferSize(window, &sw, &sh);
+        glViewport(0,0, sw, sh);
+        glClearColor(0.55f, 0.55f, 0.55f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+    }
+
 
     //General Dimension Settings) spacer = 0
-    std::vector<Setting*> settingsDimension;
-    settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqStart, "START:"));
-    settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqEnd,   "END:"));
-    settingsDimension.push_back(new NumberSelector(99,          -150, &dbTop,     "DB TOP:"));
-    settingsDimension.push_back(new NumberSelector(99,          -150, &dbBottom,  "DB BOTTOM:"));
+    //std::vector<Setting*> settingsDimension;
+    //settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqStart, "START:"));
+    //settingsDimension.push_back(new NumberSelector(99999999999, 0,    &freqEnd,   "END:"));
+    //settingsDimension.push_back(new NumberSelector(99,          -150, &dbTop,     "DB TOP:"));
+    //settingsDimension.push_back(new NumberSelector(99,          -150, &dbBottom,  "DB BOTTOM:"));
     //MenuFrame f_Dim = MenuFrame(settingsDimension);
     //MenuEntry m_Dim = MenuEntry("SPECTRUM", &f_Dim);
 
@@ -135,10 +185,11 @@ int main(){
 
 
 
-    Menu_Graph* graph = new Menu_Graph();
+    //Menu_Graph* graph = new Menu_Graph();
 
-    std::vector<Graph*>* graphs;
+    //std::vector<Graph*>* graphs;
 
+    /*
 
     //main render Loop
     while(!WindowShouldClose()){
@@ -211,6 +262,6 @@ int main(){
         //
         EndDrawing();
     }
-
+    */
     return 0;
 }

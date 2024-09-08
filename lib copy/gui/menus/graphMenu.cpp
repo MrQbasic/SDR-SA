@@ -32,13 +32,11 @@ void Menu_Graph::update() {
         this->settings.push_back(new Submenu(graph_Settings_Submenu_Menu, displaySubmenu, "\n"));
         //button for enabling the submenu
         auto updateSelection = [this, i, displaySubmenu](){
-            std::cout << "cb ok " << i+1 << " " << this->selectedSubmenu << std::endl;
             if(this->selectedSubmenu == i+1){
                 this->selectedSubmenu = 0;
             }else{
                 this->selectedSubmenu = i+1;
             }
-
             std::cout << *displaySubmenu << std::endl;
         };
         this->settings.push_back(new Button(this->graphs[i]->getName(), updateSelection, displaySubmenu, "\n"));
