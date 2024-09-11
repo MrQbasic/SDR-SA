@@ -7,7 +7,7 @@ public:
     virtual bool isInited() const = 0;
     virtual int init() = 0;
 
-    static std::vector<std::unique_ptr<SDR>>* getSDRs();
+    static std::vector<SDR*>* getSDRs();
     static void updateSDRs();
 
     void pass(){
@@ -16,6 +16,6 @@ public:
 
 private:
 
-    static std::vector<std::unique_ptr<SDR>> sdrs;
+    static std::vector<SDR*> sdrs;
 
 };
