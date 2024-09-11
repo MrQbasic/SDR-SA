@@ -1,17 +1,21 @@
 #pragma once
-#include <vector>
-#include <memory>
+#include <source/source.hpp>
 
-class SDR{ 
+class SDR : public Source{ 
 public:
     virtual ~SDR() = default;
-    virtual const char* getName() const = 0;
     virtual bool isInited() const = 0;
+    virtual int init() = 0;
 
     static std::vector<std::unique_ptr<SDR>>* getSDRs();
     static void updateSDRs();
 
+    void pass(){
+
+    };
+
 private:
+
     static std::vector<std::unique_ptr<SDR>> sdrs;
 
 };

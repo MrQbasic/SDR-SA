@@ -4,9 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "clean build",
+            "type": "shell",
+            "command": "rm -rf build && mkdir build && cd build && cmake .. && make",
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "build",
             "type": "shell",
-            "command": "make clean && make",
+            "command": "cd build && cmake .. && make",
             "args": [],
             "group": {
                 "kind": "build",

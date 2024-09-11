@@ -1,6 +1,10 @@
-#include <source/sdr.hpp>
 
-bool display_menuAddSdr = false;
+#include <source/source.hpp>
+
+bool display_menuAddSdr = true;
+
+#include <gui/menus/addSdr.hpp>
+
 
 void renderMenuBar(){
     //top Menu
@@ -13,7 +17,15 @@ void renderMenuBar(){
         }
         if(ImGui::BeginMenu("Sources")){
             //list all the sources in use
-            
+            for(auto src : *Source::getSources()){
+                if(ImGui::BeginMenu(src->getName())){
+                    
+                    src->renderMenu();
+
+                    ImGui::EndMenu();
+                }
+            }
+            //opetions for adding
             if(ImGui::MenuItem("+ SDR")){
                 display_menuAddSdr ^= true;
             }
@@ -24,20 +36,6 @@ void renderMenuBar(){
 
     //windows submenues
     if(display_menuAddSdr){
-        ImGui::Begin("Add SDR", nullptr, ImGuiWindowFlags_NoCollapse);
-        std::vector<std::unique_ptr<SDR>>* s = SDR::getSDRs();
-        if(s->empty()){
-            SDR::updateSDRs();
-            s = SDR::getSDRs();
-        }
-        for(const auto& sdr : *s){
-            const char* name = sdr->getName();
-            if(ImGui::Button(name)){
-                std::cout << name << std::endl;
-            }
-
-        }
-
-        ImGui::End();
+        renderAddSdrMenu();
     }
 }
