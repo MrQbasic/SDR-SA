@@ -14,6 +14,10 @@ public:
         int nameLen = std::snprintf(nullptr, 0, "%s #%d   ", rtlsdr_get_device_name(this->id), id);
         this->name = (const char*) malloc(sizeof(const char) * nameLen);
         std::snprintf((char*)this->name, nameLen, "%s #%d   ", rtlsdr_get_device_name(this->id), id);
+        //alloc for gain
+        gainText = new char[10];
+        //predefined
+        this->sampleCount = 2400000;  //2.4 MSps
     }
 
     bool alreadyUsed() {
@@ -26,7 +30,8 @@ public:
 
     void renderMenu() override{
         //Gain Slider
-        ImGui::SliderInt(std::to_string((float) gainSettingsValues[gain]/10).c_str(), &gain, 0, gainSettings-1, "Gain", ImGuiSliderFlags_None);
+        sprintf(this->gainText, "%.1f", (float) gainSettingsValues[gain]/10);
+        ImGui::SliderInt((const char*) this->gainText, &gain, 0, gainSettings-1, "Gain", ImGuiSliderFlags_None);
         //Remove Button
         if(ImGui::MenuItem("Remove")){
             //this->~Source();      // view TODO
@@ -44,6 +49,7 @@ public:
 
     ~RTLSDR(){
         std::cout << "RTL DESTRUCTOR ?" << std::endl;
+        delete gainText;
         //rtlsdr_close(this->rtlsdr);
         //free((char*)name);
     }
@@ -80,6 +86,7 @@ public:
 
 private:
     //Index to use with gainSettingsValues
+    char* gainText;
     int  gain;
     int  gainSettings;
     int* gainSettingsValues;
