@@ -34,6 +34,7 @@ std::vector<Graph*>* Graph::getGraphs(){
 Graph::Graph(){
     this->name = new char[30] {"new Graph"};   //TODO? hardcoded char limit is fine
     renderMenu = true;
+    render = false;
 }
 Graph::~Graph(){
     delete this->name;
@@ -55,12 +56,10 @@ void Graph::toggleDisplayStatusMenu(){
 void Graph::renderGraph(){
     if(!render) return;
         if(this->source == 0) return;
-        double** data = new double*;
-        int cnt = this->source->getData(data);
-        //this->source->updateData(0);
-        ImPlot::PlotLine(this->name, *data, cnt);
-
-        delete data;
+        double* dataX;
+        double* dataY;
+        int cnt = this->source->getData(&dataX, &dataY);
+        ImPlot::PlotLine(this->name, dataY, dataX, cnt);
 
     return;
 }
@@ -80,6 +79,7 @@ void Graph::renderMenuSettings(){
         ImGui::ListBox("Source", &this->sourceIndex, names, sources->size(), -1);
         if(sourceIndex != -1){
             this->source = (*sources)[this->sourceIndex];
+            this->render = true;
         }
 
         //Name of Graph

@@ -41,16 +41,21 @@ int main(){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::SetNextWindowPos(ImVec2(0,0));
-        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        ImGui::SetNextWindowPos(ImVec2(0,20));
+        ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+        ImVec2 graphSize = ImVec2(displaySize.x, displaySize.y-20);
+        ImGui::SetNextWindowSize(graphSize);
         if(ImGui::Begin("Graphs", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)){
             std::vector<Graph*>* graphs =  Graph::getGraphs();
-            if(ImPlot::BeginPlot("Chart", ImGui::GetIO().DisplaySize, ImPlotAxisFlags_AutoFit)){
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0,0));
+            ImVec2 graphSize = ImVec2(displaySize.x-20, displaySize.y-40);
+            if(ImPlot::BeginPlot("Chart", graphSize, ImPlotAxisFlags_AutoFit)){
                 for(auto graph : *graphs){
                     graph->renderGraph();
                 }
                 ImPlot::EndPlot();
             }
+            ImGui::PopStyleVar();
             ImGui::End();
         }
 

@@ -45,6 +45,10 @@ void renderMenuBar(){
             ImGui::EndMenu();
         }
 
+        char* fpsDisplay = new char[20];
+        snprintf(fpsDisplay, 20, "FPS: %f", ImGui::GetIO().Framerate);
+        ImGui::BeginMenu(fpsDisplay);
+
     ImGui::EndMainMenuBar();
 
 

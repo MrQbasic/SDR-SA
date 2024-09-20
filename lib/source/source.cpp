@@ -10,8 +10,9 @@ long long* Source::getFreqRange(){
     return new long long[2]{this->freqHigh, this->freqLow};
 }
 
-int Source::getData(double** dataPtr){
-    (*dataPtr) = this->data;
+int Source::getData(double** dataX, double** dataY){
+    (*dataX) = this->dataX;
+    (*dataY) = this->dataY;
     return this->sampleCount;
 }
 

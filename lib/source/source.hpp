@@ -9,7 +9,7 @@ public:
     long long* getFreqRange();
     
     //return: count   WARNING: NOT BUFFERD TO PRESERVE MEMORY WATCH OUT WHAT YOU DO WITH DATA
-    int getData(double** dataPtr);
+    int getData(double** dataX, double** dataY);
     virtual void updateData(long long centerFreq) = 0;
 
     virtual const char* getName() const = 0;
@@ -27,7 +27,8 @@ public:
 protected:
     long long freqHigh, freqLow;
     
-    double* data;
+    double* dataX;
+    double* dataY;
     int sampleCount;
 
 private:

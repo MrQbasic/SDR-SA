@@ -13,7 +13,7 @@ GLFWwindow* setupWindow(){
         return nullptr;
     }
     //create window
-    GLFWwindow* window = glfwCreateWindow(200, 200, "SDR-SA", 0, 0);
+    GLFWwindow* window = glfwCreateWindow(720, 480, "SDR-SA", 0, 0);
     if(!window){
         std::cout << "Error: Couldn't create Window" << std::endl;
     }
