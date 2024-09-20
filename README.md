@@ -1,5 +1,6 @@
 Install on Linux:
 
+```
 git clone https://github.com/MrQbasic/SDR-SA
 cd SDR-SA
 git submodule init
@@ -8,7 +9,7 @@ mkdir build && cd build
 cmake ..
 make -j 4
 ./src/SDRSA
-
+```
 
 
 HOW DO I USE IT ?
