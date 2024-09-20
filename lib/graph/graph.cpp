@@ -35,6 +35,8 @@ Graph::Graph(){
     this->name = new char[30] {"new Graph"};   //TODO? hardcoded char limit is fine
     renderMenu = true;
     render = false;
+    updaterRunning = false;
+    updaterShouldRun = false;
 }
 Graph::~Graph(){
     delete this->name;
@@ -50,23 +52,41 @@ void Graph::toggleDisplayStatusMenu(){
 }
 
 
+void Graph::updater(){
+    this->updaterRunning = true;
+    while(this->updaterShouldRun){
+        try{
+            this->source->updateData(100000000);
+        }catch (const std::exception_ptr& e){
+            this->updaterShouldRun = false;
+            std::cout << "asd" << std::endl;
+        }
+    }
+    this->updaterRunning = false;
+    std::cout << "Updater died" << std::endl;
+}
+
 
 //render functions
-
 void Graph::renderGraph(){
     if(!render) return;
+        if(updaterRunning == false && updaterShouldRun == true){
+            std::cout << "Starting updater" << std::endl;
+            this->updaterThread = new std::thread(&Graph::updater, this);
+        }
+        //render Graph
         if(this->source == 0) return;
         double* dataX;
         double* dataY;
         int cnt = this->source->getData(&dataX, &dataY);
         ImPlot::PlotLine(this->name, dataY, dataX, cnt);
-
     return;
 }
+
 void Graph::renderMenuSettings(){
     if(!renderMenu) return;
 
-    ImGui::Begin("Graph Setting");
+    ImGui::Begin("Graph Setting", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
         std::vector<Source*>* sources = Source::getSources();
         this->sourceIndex = -1;
@@ -80,6 +100,7 @@ void Graph::renderMenuSettings(){
         if(sourceIndex != -1){
             this->source = (*sources)[this->sourceIndex];
             this->render = true;
+            this->updaterShouldRun = true;
         }
 
         //Name of Graph
@@ -90,6 +111,8 @@ void Graph::renderMenuSettings(){
 
         //remove button
         if(ImGui::Button("Remove")){
+            this->updaterShouldRun = false;
+            this->updaterThread->join();
             Graph::removeGraph(this);
             delete this;
             ImGui::End();

@@ -4,6 +4,7 @@
 #include <ImGui/imgui.h>
 #include <fftw3.h>
 #include <math.h>
+#include <stdexcept>
 
 class RTLSDR : public SDR{
 
@@ -96,7 +97,7 @@ public:
         //set settings
         rtlsdr_set_testmode(this->rtlsdr, 0);   //disable testmode
         rtlsdr_set_tuner_bandwidth(this->rtlsdr, 0);   //set to auto
-        rtlsdr_set_sample_rate(this->rtlsdr, this->sampleCount);  //sample rate = 2.4M
+        rtlsdr_set_sample_rate(this->rtlsdr, 2400000);  //sample rate = 2.4M
         rtlsdr_set_offset_tuning(this->rtlsdr, 1); // enable offset tuning
         rtlsdr_reset_buffer(this->rtlsdr);
         //alloc buffers
@@ -121,6 +122,10 @@ public:
     
 
     void updateData(long long centerFreq) override{
+        if(this->inited == false){
+            throw -1;
+            return;
+        }
         //tune to frequency
         rtlsdr_set_center_freq(this->rtlsdr, centerFreq);
         //read from dev
@@ -148,7 +153,6 @@ public:
             if(current_outButPos != outBufPos){
                 dataY[outBufPos] = (centerFreq-1200000)+((double)outBufPos/(double)this->sampleCount)*(2400000);
                 dataX[outBufPos] = accum_db / accum_cnt;
-                std::cout << dataY[outBufPos] << " " << accum_cnt << " " << accum_db << std::endl;
                 accum_cnt = 0;
                 accum_db = 0;
                 outBufPos = current_outButPos;

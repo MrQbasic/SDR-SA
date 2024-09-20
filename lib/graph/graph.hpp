@@ -2,6 +2,7 @@
 
 #include <source/source.hpp>
 #include <vector>
+#include <thread>
 
 
 class Graph {
@@ -21,12 +22,19 @@ public:
     static std::vector<Graph*>* getGraphs();
 
 private:
+    void updater();
+
+private:
     bool renderMenu = false;
     bool render     = true;
 
     int sourceIndex;
     Source* source;
     char* name;
+
+    bool updaterRunning;
+    bool updaterShouldRun;
+    std::thread* updaterThread;
 
     static std::vector<Graph*> graphs;
 };

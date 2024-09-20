@@ -45,7 +45,7 @@ int main(){
         ImVec2 displaySize = ImGui::GetIO().DisplaySize;
         ImVec2 graphSize = ImVec2(displaySize.x, displaySize.y-20);
         ImGui::SetNextWindowSize(graphSize);
-        if(ImGui::Begin("Graphs", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)){
+        if(ImGui::Begin("Graphs", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus)){
             std::vector<Graph*>* graphs =  Graph::getGraphs();
             ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0,0));
             ImVec2 graphSize = ImVec2(displaySize.x-20, displaySize.y-40);
