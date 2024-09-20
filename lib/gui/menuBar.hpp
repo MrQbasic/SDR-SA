@@ -18,7 +18,7 @@ void renderMenuBar(){
             }
 
             if(ImGui::MenuItem("+ Graph")){
-                Graph* g = new Graph(nullptr);
+                Graph* g = new Graph();
                 Graph::addGraph(g);
             }
             ImGui::EndMenu();
@@ -51,7 +51,7 @@ void renderMenuBar(){
     //windows submenues
     //--- sdr add menu
     if(display_menuAddSdr){
-        renderAddSdrMenu();
+        renderAddSdrMenu(&display_menuAddSdr);
     }
     //--- graph menus
     for(auto g : *Graph::getGraphs()){

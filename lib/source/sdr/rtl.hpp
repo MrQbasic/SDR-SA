@@ -2,7 +2,8 @@
 #include <rtl-sdr.h>
 #include <format>
 #include <ImGui/imgui.h>
-
+#include <fftw3.h>
+#include <math.h>
 
 class RTLSDR : public SDR{
 
@@ -50,6 +51,13 @@ public:
     ~RTLSDR(){
         std::cout << "RTL DESTRUCTOR ?" << std::endl;
         delete gainText;
+        delete this->data;
+
+        fftw_destroy_plan(fftwPlan);
+        fftw_free(fftwInpBuffer);
+        fftw_free(fftwOutBuffer);
+
+
         //rtlsdr_close(this->rtlsdr);
         //free((char*)name);
     }
@@ -80,16 +88,43 @@ public:
         this->gainSettingsValues = new int[this->gainSettings];
         rtlsdr_get_tuner_gains(this->rtlsdr, this->gainSettingsValues);
         this->gain = 0;
+        //set settings
+        rtlsdr_set_testmode(this->rtlsdr, 0);   //disable testmode
+        rtlsdr_set_tuner_bandwidth(this->rtlsdr, 0);   //set to auto
+        rtlsdr_set_sample_rate(this->rtlsdr, this->sampleCount);  //sample rate = 2.4M
+        rtlsdr_set_offset_tuning(this->rtlsdr, 1); // enable offset tuning
+        rtlsdr_reset_buffer(this->rtlsdr);
+        //alloc buffers
+        this->data = new double[this->sampleCount];
+        fftwInpBuffer = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->sampleCount / 2);
+        fftwOutBuffer = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->sampleCount / 2);
+        fftwPlan = fftw_plan_dft_1d(this->sampleCount / 2, fftwInpBuffer, fftwOutBuffer, FFTW_FORWARD, FFTW_ESTIMATE);
+
+        updateData(0);
         return 0;
+    }
+
+    
+
+    void updateData(long long centerFreq) override{
+        std::cout << "asd" << std::endl;
+        for(int i=0; i<= this->sampleCount; i++){
+            data[i] = i % 10;
+        }
     }
 
 
 private:
     //Index to use with gainSettingsValues
     char* gainText;
-    int  gain;
-    int  gainSettings;
-    int* gainSettingsValues;
+    int   gain;
+    int   gainSettings;
+    int*  gainSettingsValues;
+
+    //needed for fftw calculation
+    fftw_complex* fftwInpBuffer;
+    fftw_complex* fftwOutBuffer;
+    fftw_plan     fftwPlan;
 
     const char* name;
     int id;

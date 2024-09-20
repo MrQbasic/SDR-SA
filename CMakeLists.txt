@@ -12,4 +12,4 @@ add_subdirectory(lib)
 
 add_subdirectory(src)
 
-target_link_options(SDRSA PRIVATE -lglfw -lGL -ldl -lrtlsdr)
+target_link_options(SDRSA PRIVATE -lglfw -lGL -ldl -lrtlsdr -lfftw3)

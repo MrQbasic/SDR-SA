@@ -1,5 +1,8 @@
 #include <graph/graph.hpp>
+#include <source/source.hpp>
+
 #include <ImGui/imgui.h>
+#include <ImGui/implot.h>
 
 #include <iostream>
 
@@ -28,8 +31,9 @@ std::vector<Graph*>* Graph::getGraphs(){
 
 //constructor / Destructor
 
-Graph::Graph(Source* source){
+Graph::Graph(){
     this->name = new char[30] {"new Graph"};   //TODO? hardcoded char limit is fine
+    renderMenu = true;
 }
 Graph::~Graph(){
     delete this->name;
@@ -49,21 +53,53 @@ void Graph::toggleDisplayStatusMenu(){
 //render functions
 
 void Graph::renderGraph(){
+    if(!render) return;
+        if(this->source == 0) return;
+        double** data = new double*;
+        int cnt = this->source->getData(data);
+        //this->source->updateData(0);
+        ImPlot::PlotLine(this->name, *data, cnt);
+
+        delete data;
+
     return;
 }
 void Graph::renderMenuSettings(){
     if(!renderMenu) return;
 
     ImGui::Begin("Graph Setting");
-        ImGui::ListBox("Source", &this->sourceIndex,  );
-        //Names
+
+        std::vector<Source*>* sources = Source::getSources();
+        this->sourceIndex = -1;
+        const char** names = (const char**) new char* [sources->size()] ;
+        int cnt = 0;
+        for(auto src: *sources){
+            names[cnt] = src->getName();
+            cnt++;
+        }
+        ImGui::ListBox("Source", &this->sourceIndex, names, sources->size(), -1);
+        if(sourceIndex != -1){
+            this->source = (*sources)[this->sourceIndex];
+        }
+
+        //Name of Graph
         ImGui::InputText("Name", name, 30, ImGuiInputTextFlags_None );
+
+        //Hide graph
+        ImGui::Checkbox("Render on Chart", & this->render);
+
         //remove button
         if(ImGui::Button("Remove")){
             Graph::removeGraph(this);
             delete this;
             ImGui::End();
             return;
+        }
+
+        ImGui::SameLine();
+        //Close button
+        if(ImGui::Button("Close")){
+            this->renderMenu = false;
         }
     ImGui::End();
 }

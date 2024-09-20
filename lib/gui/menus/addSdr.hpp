@@ -3,7 +3,7 @@
 #define refreshTime 5.0f
 float refreshProgress = -1.0f;
 
-void renderAddSdrMenu(){
+void renderAddSdrMenu(bool* display){
     ImGui::Begin("Add SDR", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
         /*
         Issue where it calls destructors too often
@@ -26,6 +26,11 @@ void renderAddSdrMenu(){
         if(ImGui::Button("Refresh") || refreshProgress == -1.0f){
             SDR::updateSDRs();
             refreshProgress = 0;
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Close")){
+            *display = false;
         }
 
 

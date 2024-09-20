@@ -6,7 +6,7 @@
 
 class Graph {
 public:
-    Graph(Source* source);
+    Graph();
     ~Graph();
 
     const char* getName();

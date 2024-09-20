@@ -6,10 +6,11 @@
 class Source{
 public:
     //stores as Double array: {min, max}
-    double* getFreqRange();
+    long long* getFreqRange();
     
     //return: count   WARNING: NOT BUFFERD TO PRESERVE MEMORY WATCH OUT WHAT YOU DO WITH DATA
     int getData(double** dataPtr);
+    virtual void updateData(long long centerFreq) = 0;
 
     virtual const char* getName() const = 0;
 
@@ -20,10 +21,11 @@ public:
     static void addSource(Source* source);
     static bool removeSource(Source* source);
 
+
     ~Source();
 
 protected:
-    double freqMax, freqMin;
+    long long freqHigh, freqLow;
     
     double* data;
     int sampleCount;

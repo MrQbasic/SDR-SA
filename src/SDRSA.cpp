@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <GLES2/gl2.h>
 
+#include <ImGui/implot.h>
+
 #include <iostream>
 
 #include <gui/setup.hpp>
@@ -21,6 +23,8 @@ int main(){
     GLFWwindow* window = setupWindow();
     if(!window) return 0;
 
+    ImPlot::CreateContext();
+
     ImGui::StyleColorsDark();
 
 
@@ -37,6 +41,18 @@ int main(){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        ImGui::SetNextWindowPos(ImVec2(0,0));
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        if(ImGui::Begin("Graphs", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)){
+            std::vector<Graph*>* graphs =  Graph::getGraphs();
+            if(ImPlot::BeginPlot("Chart", ImGui::GetIO().DisplaySize, ImPlotAxisFlags_AutoFit)){
+                for(auto graph : *graphs){
+                    graph->renderGraph();
+                }
+                ImPlot::EndPlot();
+            }
+            ImGui::End();
+        }
 
         renderMenuBar();
 

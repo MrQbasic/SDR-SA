@@ -6,12 +6,12 @@
 
 std::vector<Source*>  Source::sources;
 
-double* Source::getFreqRange(){
-    return new double[2]{this->freqMax, this->freqMin};
+long long* Source::getFreqRange(){
+    return new long long[2]{this->freqHigh, this->freqLow};
 }
 
 int Source::getData(double** dataPtr){
-    *dataPtr = this->data;
+    (*dataPtr) = this->data;
     return this->sampleCount;
 }
 
