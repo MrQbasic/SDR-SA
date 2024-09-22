@@ -5,6 +5,7 @@
 bool display_menuAddSdr = true;
 
 #include <gui/menus/addSdr.hpp>
+#include <gui/menus/addModifier.hpp>
 
 
 void renderMenuBar(){
@@ -25,17 +26,34 @@ void renderMenuBar(){
         }
         if(ImGui::BeginMenu("Sources")){
             //list all the sources in use
+            bool displayHeader = true;
             for(auto src : *Source::getSources()){
+                //render header once
+                if(displayHeader){
+                    ImGui::BeginDisabled();
+                    ImGui::MenuItem("--Active sources--");
+                    ImGui::EndDisabled();
+                    displayHeader = false;
+                }
+                //list all sdrs
                 if(ImGui::BeginMenu(src->getName())){
-                    
                     src->renderMenu();
-
                     ImGui::EndMenu();
                 }
             }
             //opetions for adding
+            ImGui::BeginDisabled();
+            ImGui::MenuItem("--Add--");
+            ImGui::EndDisabled();
+            //-SDR
             if(ImGui::MenuItem("+ SDR")){
                 display_menuAddSdr ^= true;
+            }
+            //-Modifier
+            
+            if(ImGui::BeginMenu("+ Modifier")){
+                renderAddModifier();
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
