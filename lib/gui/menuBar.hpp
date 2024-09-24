@@ -36,9 +36,8 @@ void renderMenuBar(){
                     displayHeader = false;
                 }
                 //list all sdrs
-                if(ImGui::BeginMenu(src->getName())){
-                    src->renderMenu();
-                    ImGui::EndMenu();
+                if(ImGui::Selectable(src->getName())){
+                    src->renderMenu(true);
                 }
             }
             //opetions for adding
@@ -46,35 +45,37 @@ void renderMenuBar(){
             ImGui::MenuItem("--Add--");
             ImGui::EndDisabled();
             //-SDR
-            if(ImGui::MenuItem("+ SDR")){
-                display_menuAddSdr ^= true;
+            if(ImGui::BeginMenu("+ SDR")){
+                renderAddSdrMenu();
+                ImGui::EndMenu();
             }
             //-Modifier
-            
             if(ImGui::BeginMenu("+ Modifier")){
                 renderAddModifier();
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
-        if(ImGui::BeginMenu("Chart")){
-            
 
+        if(ImGui::BeginMenu("Chart")){
             ImGui::EndMenu();
         }
 
         char* fpsDisplay = new char[20];
         snprintf(fpsDisplay, 20, "FPS: %f", ImGui::GetIO().Framerate);
-        ImGui::BeginMenu(fpsDisplay);
+        if(ImGui::BeginMenu(fpsDisplay)){
+            ImGui::EndMenu();
+        }
 
     ImGui::EndMainMenuBar();
 
 
     //windows submenues
-    //--- sdr add menu
-    if(display_menuAddSdr){
-        renderAddSdrMenu(&display_menuAddSdr);
+    //-- source menus
+    for(auto s : *Source::getSources()){
+        s->renderMenu(false);
     }
+
     //--- graph menus
     for(auto g : *Graph::getGraphs()){
         //automaticly desides to render it or not

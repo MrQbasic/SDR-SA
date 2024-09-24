@@ -6,13 +6,15 @@
 
 std::vector<Source*>  Source::sources;
 
-long long* Source::getFreqRange(){
-    return new long long[2]{this->freqHigh, this->freqLow};
+double* Source::getFreqRange(){
+    return new double[2]{this->freqHigh, this->freqLow};
+    this->sampleCount = -1;
 }
 
 int Source::getData(double** dataX, double** dataY){
-    (*dataX) = this->dataX;
-    (*dataY) = this->dataY;
+    
+    if(dataX != nullptr) (*dataX) = this->dataX;
+    if(dataY != nullptr) (*dataY) = this->dataY;
     return this->sampleCount;
 }
 
@@ -41,7 +43,7 @@ Source::~Source(){
 }
 
 
-void Source::renderMenu(){
+void Source::renderMenu(bool toggle){
     if(ImGui::MenuItem("Remove")){
         //this->~Source();      // view TODO
         Source::removeSource(this);

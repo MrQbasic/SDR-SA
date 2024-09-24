@@ -22,6 +22,10 @@ public:
         this->sampleCount = 1000;  //out defaukt
     }
 
+    double getBandwidth() override{
+        return 2400000.0;
+    }
+
     bool alreadyUsed() {
         int error = rtlsdr_open(&this->rtlsdr, this->id);
         if(error != 0) return true;
@@ -30,26 +34,38 @@ public:
         return false;
     }
 
-    void renderMenu() override{
-        //Gain Slider
-        if(ImGui::SliderInt((const char*) this->gainText, &gain, 0, gainSettings-1, "Gain", ImGuiSliderFlags_None)){
-            sprintf(this->gainText, "%.1f", (float) gainSettingsValues[gain]/10);
-            rtlsdr_set_tuner_gain(this->rtlsdr, gainSettingsValues[gain]);
-        }
-        //Remove Button
-        if(ImGui::MenuItem("Remove")){
-            //this->~Source();      // view TODO
-            this->inited = false;
-            Source::removeSource(this);
-            if(this->rtlsdr != 0){
-                rtlsdr_close(this->rtlsdr);
-            }else{
-                std::cout << "unexpected ERROR!" << std::endl;
-            }
-            SDR::updateSDRs();
+    void renderMenu(bool toggle) override{
+        if(toggle){
+            this->displayMenu ^= true; 
             return;
         }
-    }
+        if(!this->displayMenu) return;
+        if(ImGui::Begin(this->name, &(this->displayMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)){ 
+            //Gain Slider
+            if(ImGui::SliderInt("Gain", &gain, 0, gainSettings-1, (const char*) this->gainText, ImGuiSliderFlags_None)){
+                sprintf(this->gainText, "%.1f", (float) gainSettingsValues[gain]/10);
+                rtlsdr_set_tuner_gain(this->rtlsdr, gainSettingsValues[gain]);
+            }
+            //Remove Button
+            if(ImGui::Button("Remove")){
+                //this->~Source();      // view TODO
+                this->inited = false;
+                Source::removeSource(this);
+                if(this->rtlsdr != 0){
+                    rtlsdr_close(this->rtlsdr);
+                }else{
+                    std::cout << "unexpected ERROR!" << std::endl;
+                }
+                SDR::updateSDRs();
+                ImGui::End();
+                return;
+            }
+            
+            ImGui::InputDouble("dbShift", &(this->dbShift), 0.25, 1.0, "%.1f", ImGuiInputTextFlags_None);
+
+            ImGui::End();
+        }
+    }   
 
     ~RTLSDR(){
         std::cout << "RTL DESTRUCTOR ?" << std::endl;
@@ -151,8 +167,8 @@ public:
             double current_db = (20 * log10(current_mag)) -140; 
             int current_outButPos = (int) (((double)inpBufPos/(double)fftSize) * (double) this->sampleCount);
             if(current_outButPos != outBufPos){
-                dataY[outBufPos] = (centerFreq-1200000)+((double)outBufPos/(double)this->sampleCount)*(2400000);
-                dataX[outBufPos] = accum_db / accum_cnt;
+                dataX[outBufPos] = (centerFreq-1200000)+((double)outBufPos/(double)this->sampleCount)*(2400000);
+                dataY[outBufPos] = (accum_db / accum_cnt) + dbShift;
                 accum_cnt = 0;
                 accum_db = 0;
                 outBufPos = current_outButPos;
@@ -168,6 +184,8 @@ public:
 
 
 private:
+    bool displayMenu = false;
+
     //Index to use with gainSettingsValues
     char* gainText;
     int   gain;
@@ -182,6 +200,8 @@ private:
     const char* name;
     int id;
     bool inited;
+
+    double dbShift;
 
     uint8_t* sampleBuffer;
     const int sampleBufferSize = 512 * 16 * 32;

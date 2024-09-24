@@ -37,6 +37,7 @@ Graph::Graph(){
     render = false;
     updaterRunning = false;
     updaterShouldRun = false;
+    this->sourceIndex = -1;  // nothing is set to gest started 
 }
 Graph::~Graph(){
     delete this->name;
@@ -76,20 +77,20 @@ void Graph::renderGraph(){
         }
         //render Graph
         if(this->source == 0) return;
-        double* dataX;
-        double* dataY;
+        double* dataX = nullptr;
+        double* dataY = nullptr;
         int cnt = this->source->getData(&dataX, &dataY);
-        ImPlot::PlotLine(this->name, dataY, dataX, cnt);
+        if(dataX == nullptr || dataY == nullptr) return;
+        ImPlot::PlotLine(this->name, dataX, dataY, cnt);
     return;
 }
 
 void Graph::renderMenuSettings(){
     if(!renderMenu) return;
 
-    ImGui::Begin("Graph Setting", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+    ImGui::Begin("Graph Setting", &(this->renderMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
         std::vector<Source*>* sources = Source::getSources();
-        this->sourceIndex = -1;
         const char** names = (const char**) new char* [sources->size()] ;
         int cnt = 0;
         for(auto src: *sources){
@@ -118,11 +119,6 @@ void Graph::renderMenuSettings(){
             ImGui::End();
             return;
         }
-
-        ImGui::SameLine();
-        //Close button
-        if(ImGui::Button("Close")){
-            this->renderMenu = false;
-        }
+        
     ImGui::End();
 }
