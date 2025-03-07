@@ -37,8 +37,22 @@ Graph::Graph(){
     render = false;
     updaterRunning = false;
     updaterShouldRun = false;
-    this->sourceIndex = -1;  // nothing is set to gest started 
 }
+
+Graph::Graph(Source* src){
+    //auto gen the name
+    char* srcName = (char*) src->getName();
+    int nameLen = std::snprintf(nullptr, 0, "Graph: %s", srcName);
+    this->name = new char[nameLen];
+    std::snprintf(this->name, nameLen, "Graph: %s", srcName);
+    //do the rest of the setup
+    this->source = src;
+    renderMenu = true;
+    render = true;
+    updaterRunning = false;
+    updaterShouldRun = true;
+}
+
 Graph::~Graph(){
     delete this->name;
 }
@@ -81,7 +95,7 @@ void Graph::renderGraph(){
         double* dataY = nullptr;
         int cnt = this->source->getData(&dataX, &dataY);
         if(dataX == nullptr || dataY == nullptr) return;
-        ImPlot::PlotLine(this->name, dataX, dataY, cnt);
+        ImPlot::PlotLine(this->name, dataX, dataY, cnt-1);
     return;
 }
 
@@ -90,19 +104,40 @@ void Graph::renderMenuSettings(){
 
     ImGui::Begin("Graph Setting", &(this->renderMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
+
+        //Input Source
         std::vector<Source*>* sources = Source::getSources();
         const char** names = (const char**) new char* [sources->size()] ;
-        int cnt = 0;
-        for(auto src: *sources){
-            names[cnt] = src->getName();
-            cnt++;
+        int currentSourceIndex = -1;
+        int nameCnt = 0;
+        for(int i=0; i<(*sources).size(); i++){
+            Source* src = (*sources)[i];
+            if(src == (Source*) this) continue;   //you cant scan yourself
+            if(src == this->source) currentSourceIndex = nameCnt; //get index of selected SDR
+            names[nameCnt] = src->getName();
+            nameCnt++;  //we need the extra coutner as i includes the scanner itself so that can create an offset
         }
-        ImGui::ListBox("Source", &this->sourceIndex, names, sources->size(), -1);
-        if(sourceIndex != -1){
-            this->source = (*sources)[this->sourceIndex];
-            this->render = true;
-            this->updaterShouldRun = true;
+        int newSourceIndex = currentSourceIndex;
+        ImGui::ListBox("Source", &newSourceIndex, names, nameCnt, -1);
+        //check if we changed the sdr
+        if(currentSourceIndex != newSourceIndex){
+            std::cout << "New Source Selected" << std::endl;
+            std::cout << "current Src Ptr: " << this->source << std::endl;
+            std::cout << "new src index: " << newSourceIndex << std::endl;
+            std::cout << "this: " << this << std::endl;
+            for(int i=0; i<(*sources).size(); i++){
+                Source* src = (*sources)[i];
+                std::cout << "Global src Index: " << i << " Prt of src: " << src << std::endl;
+                if( src == (Source*)this) continue;
+                newSourceIndex--;
+                if(newSourceIndex == -1){
+                    this->source = (*sources)[i];
+                    this->render = true;
+                    this->updaterShouldRun = true;
+                }
+            }
         }
+
 
         //Name of Graph
         ImGui::InputText("Name", name, 30, ImGuiInputTextFlags_None );

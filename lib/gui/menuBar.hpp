@@ -6,6 +6,7 @@ bool display_menuAddSdr = true;
 
 #include <gui/menus/addSdr.hpp>
 #include <gui/menus/addModifier.hpp>
+#include <gui/menus/settings.hpp>
 
 
 void renderMenuBar(){
@@ -58,6 +59,11 @@ void renderMenuBar(){
         }
 
         if(ImGui::BeginMenu("Chart")){
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Settings")){
+            renderSettingsMenu();
             ImGui::EndMenu();
         }
 

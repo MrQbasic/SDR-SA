@@ -14,6 +14,9 @@ public:
 
     };
 
+protected:
+    void commonInit();
+
 private:
 
     static std::vector<SDR*> sdrs;

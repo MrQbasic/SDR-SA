@@ -1,7 +1,10 @@
 #include <source/sdr.hpp>
 #include <iostream>
 
+#include <source/source.hpp>
 #include <source/sdr/rtl.hpp>
+
+#include <gui/menus/settings.hpp>
 
 std::vector<SDR*> SDR::sdrs;
 
@@ -25,4 +28,12 @@ void SDR::updateSDRs(){
         sdrs.push_back(rtl);
     }
 
+}
+
+
+void SDR::commonInit(){
+    if(setting_easyMode){
+        Source_Scanner* sdrScanner = new Source_Scanner((Source*)this);
+        Source::addSource(sdrScanner);
+    }
 }

@@ -1,3 +1,7 @@
+#pragma once
+
+#include <gui/menus/settings.hpp>
+#include <graph/graph.hpp>
 #include <source/source.hpp>
 #include <ImGui/imgui.h>
 #include <math.h>
@@ -5,22 +9,51 @@
 #include <cstring>
 #include <format>
 
+#include <iostream>
+
 class Source_Scanner : public Source{
 public:
-    Source_Scanner(){
-        this->sourceIndex = -1;
-        this->name = new char[30];
-        this->titleName = new char[30];
-        std::snprintf(this->name, 30, "new Scanner #%d", id);
-        std::snprintf(this->titleName, 30, "new Scanner #%d", id);
+    //name gets delated by the Scanner destructor
+    Source_Scanner(Source* src){
+        //auto gened name
+        char* srcName = (char*) src->getName();
+        int nameLen = std::snprintf(nullptr, 0, "Scanner: %s", srcName);
+        this->name = new char[nameLen];
+        std::snprintf(this->name, nameLen, "Scanner: %s", srcName);
+        //create scanner and save it so we dont have to worry about the memory
+        this->source = src;
+        //standart Setup
+        this->newNameBuffer = new char[30];
+        memccpy(this->newNameBuffer, this->name, sizeof(char), 30);
         id++;
         this->newSampleCount = 1000; // default value is stored there
         this->sampleCount = 0;
         this->dataX = nullptr;
         this->dataY = nullptr;
         this->dataYAvgCnt = nullptr;
-        this->nextFreqHigh = 100000000;
-        this->nextFreqLow  =  90000000;
+        this->nextFreqHigh = 110000000;
+        this->nextFreqLow  =  80000000;
+        //autocreate the Graph as well
+        if(setting_easyMode){
+            Graph* newGraph = new Graph((Source*)this);
+            Graph::addGraph(newGraph);
+        }
+    }
+
+
+    Source_Scanner(){
+        this->name = new char[30];
+        this->newNameBuffer = new char[30];
+        std::snprintf(this->name, 30, "new Scanner #%d", id);
+        memccpy(this->newNameBuffer, this->name, sizeof(char), 30);
+        id++;
+        this->newSampleCount = 1000; // default value is stored there
+        this->sampleCount = 0;
+        this->dataX = nullptr;
+        this->dataY = nullptr;
+        this->dataYAvgCnt = nullptr;
+        this->nextFreqHigh = 110000000;
+        this->nextFreqLow  =  80000000;
         this->source = nullptr;
     }
     
@@ -30,7 +63,7 @@ public:
 
     ~Source_Scanner(){
         delete this->name;
-        delete this->titleName;
+        delete this->newNameBuffer;
         delete this->dataX;
         delete this->dataY;
         delete this->dataYAvgCnt;
@@ -125,27 +158,44 @@ public:
             this->displayMenu ^= true;
             return;
         }
-        if(!this->displayMenu){
-            std::memcpy(this->titleName, this->name, sizeof(char)*30);
-            return;
-        }
-        if(ImGui::Begin(this->titleName, &(this->displayMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)){
+        if(!this->displayMenu) return;
+        if(ImGui::Begin(this->name, &(this->displayMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)){
             //Input Name
-            ImGui::InputText("Name", name, 30, ImGuiInputTextFlags_None);
+            if(ImGui::InputText("Name", newNameBuffer, 30, ImGuiInputTextFlags_EnterReturnsTrue)){
+                memccpy(this->name, this->newNameBuffer, sizeof(char), 30);
+            }
+            
             //Input Source
-            //TODO:: Working with source index is shit as they change switch to using it or ptrs to identify it
             std::vector<Source*>* sources = Source::getSources();
             const char** names = (const char**) new char* [sources->size()] ;
-            int cnt = 0;
-            for(auto src: *sources){
-                if(src == this) continue;
-                names[cnt] = src->getName();
-                cnt++;
+            int currentSourceIndex = -1;
+            int nameCnt = 0;
+            for(int i=0; i<(*sources).size(); i++){
+                Source* src = (*sources)[i];
+                if(src == (Source*) this) continue;   //you cant scan yourself
+                if(src == this->source) currentSourceIndex = nameCnt; //get index of selected SDR
+                names[nameCnt] = src->getName();
+                nameCnt++;  //we need the extra coutner as i includes the scanner itself so that can create an offset
             }
-            ImGui::ListBox("Source", &this->sourceIndex, names, cnt, -1);
-            if(sourceIndex != -1){
-                this->source = (*sources)[this->sourceIndex];
+            int newSourceIndex = currentSourceIndex;
+            ImGui::ListBox("Source", &newSourceIndex, names, nameCnt, -1);
+            //check if we changed the sdr
+            if(currentSourceIndex != newSourceIndex){
+                std::cout << "New Source Selected" << std::endl;
+                std::cout << "current Src Ptr: " << this->source << std::endl;
+                std::cout << "new src index: " << newSourceIndex << std::endl;
+                std::cout << "this: " << this << std::endl;
+                for(int i=0; i<(*sources).size(); i++){
+                    Source* src = (*sources)[i];
+                    std::cout << "Global src Index: " << i << " Prt of src: " << src << std::endl;
+                    if( src == this) continue;
+                    newSourceIndex--;
+                    if(newSourceIndex == -1){
+                        this->source = (*sources)[i];
+                    }
+                }
             }
+
             //Input OutBuffer Size
             if(ImGui::InputInt("Output Size", &(this->newSampleCount))){
                 //limit the size 
@@ -180,14 +230,13 @@ public:
     
 private:
     //source
-    int sourceIndex;
     Source* source;
 
     //menu + buffering of inputs
     bool displayMenu;
-    static int id;
+    static inline int id = 0;
     char* name;
-    char* titleName;
+    char* newNameBuffer;
     double nextFreqHigh;
     double nextFreqLow;
 
@@ -198,5 +247,3 @@ private:
     int newSampleCount = 1000;
 
 };
-
-int Source_Scanner::id = 0;

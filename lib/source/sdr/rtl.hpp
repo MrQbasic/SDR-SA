@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdexcept>
 
+#include <source/modifier/scanner.hpp>
+
 class RTLSDR : public SDR{
 
 public:
@@ -130,8 +132,12 @@ public:
             std::cout << "ERROR: Cant allocate all buffers for RTL-SDR!" << std::endl;
             std::exit(-1);
         }
-        //push a first update TODO substitute for proper pipeline system
+        //push a first update TODO substitute for proper pipeline system (2025: idk what that means lol!)
         updateData(100000000);
+
+        //autocreate scanner
+        this->commonInit();
+
         return 0;
     }
 
@@ -201,7 +207,7 @@ private:
     int id;
     bool inited;
 
-    double dbShift;
+    double dbShift = 0.0;
 
     uint8_t* sampleBuffer;
     const int sampleBufferSize = 512 * 16 * 32;

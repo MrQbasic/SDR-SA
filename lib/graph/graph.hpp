@@ -8,6 +8,9 @@
 class Graph {
 public:
     Graph();
+
+    Graph(Source* src);
+
     ~Graph();
 
     const char* getName();
@@ -28,8 +31,7 @@ private:
     bool renderMenu = false;
     bool render     = true;
 
-    int sourceIndex;
-    Source* source;
+    Source* source = nullptr;
     char* name;
 
     bool updaterRunning;
