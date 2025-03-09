@@ -7,7 +7,7 @@ bool display_menuAddSdr = true;
 #include <gui/menus/addSdr.hpp>
 #include <gui/menus/addModifier.hpp>
 #include <gui/menus/settings.hpp>
-
+#include <gui/menus/tools.hpp>
 
 void renderMenuBar(){
     //top Menu
@@ -58,6 +58,12 @@ void renderMenuBar(){
             ImGui::EndMenu();
         }
 
+        if(ImGui::BeginMenu("Tools")){
+            renderToolsMenu();
+            ImGui::EndMenu();
+        }
+
+
         if(ImGui::BeginMenu("Chart")){
             ImGui::EndMenu();
         }
@@ -81,6 +87,8 @@ void renderMenuBar(){
     for(auto s : *Source::getSources()){
         s->renderMenu(false);
     }
+
+    renderTools();
 
     //--- graph menus
     for(auto g : *Graph::getGraphs()){

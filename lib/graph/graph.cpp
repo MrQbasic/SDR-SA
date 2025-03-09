@@ -47,7 +47,7 @@ Graph::Graph(Source* src){
     std::snprintf(this->name, nameLen, "Graph: %s", srcName);
     //do the rest of the setup
     this->source = src;
-    renderMenu = true;
+    renderMenu = false;
     render = true;
     updaterRunning = false;
     updaterShouldRun = true;

@@ -16,7 +16,7 @@ public:
         this->inited = false;
         //format name
         int nameLen = std::snprintf(nullptr, 0, "%s #%d   ", rtlsdr_get_device_name(this->id), id);
-        this->name = (const char*) malloc(sizeof(const char) * nameLen);
+        this->name = new char[nameLen+1];
         std::snprintf((char*)this->name, nameLen, "%s #%d   ", rtlsdr_get_device_name(this->id), id);
         //alloc for gain
         gainText = new char[10];
@@ -82,16 +82,19 @@ public:
 
 
         //rtlsdr_close(this->rtlsdr);
-        //free((char*)name);
+        delete name;
     }
 
-    static std::vector<RTLSDR*> getSDRs(){
-        std::vector<RTLSDR*> rtlsdrs;
-        int num = rtlsdr_get_device_count();
-        for(int i=0; i<num; i++){
-            rtlsdrs.push_back(new RTLSDR(i));
+    static void updateSdrList(){
+        int count = rtlsdr_get_device_count();
+        for(int i=0; i<count; i++){
+            rtlsdr_dev_t* rtl;
+            int error = rtlsdr_open(&rtl, i);
+            if(error == 0){
+                rtlsdr_close(rtl); // we assume that it works
+                sdrs.push_back(new RTLSDR(i));
+            }
         }
-        return rtlsdrs;
     }
 
     bool isInited() const override{
@@ -150,6 +153,7 @@ public:
         }
         //tune to frequency
         rtlsdr_set_center_freq(this->rtlsdr, centerFreq);
+        std::cout << rtlsdr_get_center_freq(this->rtlsdr) << " ";
         //read from dev
         int read = 0;
         rtlsdr_read_sync(this->rtlsdr, sampleBuffer, sampleBufferSize, &read);

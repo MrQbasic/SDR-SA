@@ -31,8 +31,8 @@ public:
         this->dataX = nullptr;
         this->dataY = nullptr;
         this->dataYAvgCnt = nullptr;
-        this->nextFreqHigh = 110000000;
-        this->nextFreqLow  =  80000000;
+        this->nextFreqHigh =1000000000;
+        this->nextFreqLow  = 960000000;
         //autocreate the Graph as well
         if(setting_easyMode){
             Graph* newGraph = new Graph((Source*)this);
@@ -72,7 +72,8 @@ public:
     const char* getName() const override {
         return (const char*) name;
     }
-
+    
+    //centerFreq arg not used
     void updateData(long long centerFreq) override {
         //resize output Buffer is needed
         if(this->sampleCount != this->newSampleCount ||
@@ -95,7 +96,7 @@ public:
             //populate buffers with starting values
             double freqWidth = this->freqHigh - this->freqLow;
             double freqStep  = freqWidth / sampleCount;
-            std::cout << "feqStep in Hz " << freqStep; 
+            std::cout << "feqStep in Hz " << freqStep << std::endl; 
             for(int i=0; i<sampleCount; i++){
                 this->dataX[i] = (i * freqStep) + freqLow;
                 this->dataY[i] = 0;
@@ -115,14 +116,16 @@ public:
             int lastIndex = -1;
             while(!done){
                 //get samples
+                //std::cout << currentCenterFreq << " ";
                 this->source->updateData(currentCenterFreq);
                 double *srcDataX, *srcDataY;
                 int cnt = this->source->getData(&srcDataX, &srcDataY);
-                //downsize them
+                //downsize the samples we got from the src to the size allocated in the scanner
                 for(int i=0; i<cnt; i++){
                     //y mapping calculation
                     double xVal =  srcDataX[i];
-                    if(xVal > this->freqHigh){
+                    //check if we are done
+                    if(xVal >= this->freqHigh){
                         done = true;
                         break;
                     }
@@ -139,7 +142,7 @@ public:
                         dataYAvgCnt[index] = 0;
                         if(lastIndex != -1){
                             dataY[lastIndex] /= dataYAvgCnt[lastIndex];
-                        } 
+                        }
                         lastIndex = index;
                     }
                     dataY[index] += srcDataY[i];
@@ -148,6 +151,7 @@ public:
 
                 currentCenterFreq += srcBw;
             }
+            std::cout << "" <<  std::endl;
         }catch(std::exception e){
             std::cout << "exception cought. Continuing!" << std::endl;
         }
@@ -167,7 +171,7 @@ public:
             
             //Input Source
             std::vector<Source*>* sources = Source::getSources();
-            const char** names = (const char**) new char* [sources->size()] ;
+            const char** names = (const char**) new char* [sources->size()];
             int currentSourceIndex = -1;
             int nameCnt = 0;
             for(int i=0; i<(*sources).size(); i++){
@@ -179,6 +183,7 @@ public:
             }
             int newSourceIndex = currentSourceIndex;
             ImGui::ListBox("Source", &newSourceIndex, names, nameCnt, -1);
+            delete names;
             //check if we changed the sdr
             if(currentSourceIndex != newSourceIndex){
                 std::cout << "New Source Selected" << std::endl;

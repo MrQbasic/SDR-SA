@@ -3,6 +3,7 @@
 
 #include <source/source.hpp>
 #include <source/sdr/rtl.hpp>
+#include <source/sdr/bladeRF.hpp>
 
 #include <gui/menus/settings.hpp>
 
@@ -12,22 +13,16 @@ std::vector<SDR*> SDR::sdrs;
 std::vector<SDR*>* SDR::getSDRs(){ return &sdrs; }
 
 void SDR::updateSDRs(){
-    //cleaning unused once
-    for(int i=sdrs.size()-1; i>=0; i--){
-        auto sdr = sdrs[i];
-        if(!sdr->isInited()){
-            delete sdr;
+    //clean out all the uninited sdrs
+    for(int i=sdrs.size(); i>0; i--){
+        if(!(sdrs[0]->isInited())){
+            delete sdrs.at(i);
             sdrs.erase(sdrs.begin() + i);
         }
     }
-
-    //adding RTLSDRs
-    std::vector<RTLSDR*> rtls = RTLSDR::getSDRs();
-    for(auto& rtl : rtls){
-        if(rtl->alreadyUsed()) continue;
-        sdrs.push_back(rtl);
-    }
-
+    //populate the list again
+    RTLSDR::updateSdrList();
+    BLADERF::updateSdrList();
 }
 
 
