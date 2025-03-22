@@ -1,6 +1,6 @@
-[submodule "ImGui-repo"]
-	path = ImGui-repo
+[submodule "ImGui"]
+	path = lib-ext/ImGui
 	url = https://github.com/ocornut/imgui/
 [submodule "implot"]
-	path = implot
+	path = lib-ext/implot
 	url = https://github.com/epezent/implot

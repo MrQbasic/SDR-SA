@@ -87,6 +87,7 @@
         "variant": "cpp",
         "structs.h": "c",
         "constants.h": "c",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "coroutine": "cpp"
     }
 }

@@ -4,7 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/lib"
+                "${workspaceFolder}/lib/",
+                "${workspaceFolder}/lib-ext/",
+                "${workspaceFolder}/modules/mod-lib/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
