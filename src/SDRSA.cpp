@@ -2,6 +2,7 @@
 
 #include <gui/setup.hpp>
 #include <gui/gui.hpp>
+#include <pipeline/pipeline.hpp>
 
 //default values 
 long long freqStart =  85 * 1000 * 1000; //80MHZ
@@ -21,6 +22,7 @@ int main(){
 
     //loads the modules
     setupGui();
+    setupPipline();
 
     while(!glfwWindowShouldClose(window)){
         //Presetup

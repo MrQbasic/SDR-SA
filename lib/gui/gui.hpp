@@ -23,6 +23,7 @@ void setupGui(){
             std::string path = entry.path();
             //check if its even the file type we need!
             if(path.find(".so") == std::string::npos) continue;
+            if(path.find("gui_mainWindow_") == std::string::npos) continue;
             //try loading the module   
             void* handle = dlopen(path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
             if(!handle){
