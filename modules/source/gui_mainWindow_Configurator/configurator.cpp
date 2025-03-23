@@ -1,5 +1,5 @@
 #include "mod-lib/gui_mainWindow.hpp"
-
+#include "pipeline/pipeline.hpp"
 #include "ImGui/imgui.h"
 
 #include <iostream>
@@ -16,13 +16,14 @@ public:
 
         //The selector list
         int nodelistWidth = io.DisplaySize.x/3 < 300 ? (io.DisplaySize.x/3) : (300);
-        ImGui::BeginChild("nodelist", ImVec2(nodelistWidth, 0));
-        for(int i=0;i<100; i++){
-            ImGui::Text("Im the CHILD!");
-        }
 
-        //The main menu
+        ImGui::BeginChild("nodelist", ImVec2(300, 0), 0, ImGuiWindowFlags_MenuBar);
+        for(int i=0;i<100; i++){
+            ImGui::Text("test");
+        }
         ImGui::EndChild();
+        ImGui::SameLine();
+        //The main menu
         ImGui::BeginChild("nodeEditor");
         for(int i=0;i<100; i++){
             ImGui::Text("Im 2nd the CHILD!");
@@ -31,7 +32,6 @@ public:
     }
 
 private:
-    bool displayDemo = false;
 
 };
 

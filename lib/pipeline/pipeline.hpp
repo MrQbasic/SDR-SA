@@ -1,10 +1,16 @@
+#pragma once
 #include "mod-lib/pipelineBlock.hpp"
 
+#include <memory>
 #include <vector>
+#include <tuple>
+#include <iostream>
+#include <dlfcn.h>
+#include <filesystem>
 
 typedef pipelineBlock* (*CreateModuleFunc_pipline)();
 std::vector<CreateModuleFunc_pipline> piplineBlock_createFuncs;
-
+std::vector<std::unique_ptr<pipelineBlock>> piplineBlocks;
 
 void setupPipline(){
     std::string path = "./build/modules/source";
@@ -31,7 +37,7 @@ void setupPipline(){
                 continue;
             }
             piplineBlock_createFuncs.push_back(createFunc);
-
+            piplineBlocks.emplace_back(createFunc());
             std::cout << "Module added: " << path << std::endl;
         }
     } catch (const std::filesystem::filesystem_error& e) {
