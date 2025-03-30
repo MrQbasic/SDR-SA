@@ -17,7 +17,7 @@ public:
         //The selector list
         int nodelistWidth = io.DisplaySize.x/3 < 300 ? (io.DisplaySize.x/3) : (300);
 
-        ImGui::BeginChild("nodelist", ImVec2(300, 0), 0, ImGuiWindowFlags_MenuBar);
+        ImGui::BeginChild("nodelist", ImVec2(300, 0));
         for(int i=0;i<100; i++){
             ImGui::Text("test");
         }
