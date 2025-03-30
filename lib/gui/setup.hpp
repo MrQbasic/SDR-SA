@@ -4,6 +4,8 @@
 
 #include <implot/implot.h>
 
+#include <imnodes/imnodes.h>
+
 #include <GLFW/glfw3.h>
 #include <GLES2/gl2.h>
 
@@ -47,10 +49,14 @@ GLFWwindow* setupWindow(){
     //imgui contxt
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
+
+    ImNodes::CreateContext();
+
     //renderer
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+
 
     return window;
 }

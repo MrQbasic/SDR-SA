@@ -2,6 +2,8 @@
 #include "pipeline/pipeline.hpp"
 #include "ImGui/imgui.h"
 
+#include <imnodes/imnodes.h>
+
 #include <iostream>
 
 
@@ -15,19 +17,35 @@ public:
         ImGuiIO& io = ImGui::GetIO();
 
         //The selector list
-        int nodelistWidth = io.DisplaySize.x/3 < 300 ? (io.DisplaySize.x/3) : (300);
 
-        ImGui::BeginChild("nodelist", ImVec2(300, 0));
-        for(int i=0;i<100; i++){
-            ImGui::Text("test");
-        }
-        ImGui::EndChild();
-        ImGui::SameLine();
-        //The main menu
-        ImGui::BeginChild("nodeEditor");
-        for(int i=0;i<100; i++){
-            ImGui::Text("Im 2nd the CHILD!");
-        }
+        ImGui::BeginChild("nodelist");
+        
+        
+        ImNodes::BeginNodeEditor();
+
+
+        piplineBlocks[0]->render();
+
+        /*
+        ImNodes::BeginNode(1);
+        ImNodes::BeginNodeTitleBar();
+        ImGui::TextUnformatted("Test Node");
+        ImNodes::EndNodeTitleBar();
+        ImNodes::BeginInputAttribute(2);
+        ImGui::Text("input");
+        ImNodes::EndInputAttribute();
+
+        ImNodes::BeginOutputAttribute(3);
+        ImGui::Indent(40);
+        ImGui::Text("output");
+        ImNodes::EndOutputAttribute();
+
+        ImNodes::EndNode();
+
+        */
+
+        ImNodes::EndNodeEditor();
+
         ImGui::EndChild();
     }
 
