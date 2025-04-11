@@ -9,7 +9,7 @@ foreach(MODULE_DIR ${MODULES_DIRS})
 
         # Create the module as a shared library
         add_library(${MODULE_DIR} SHARED ${MODULE_SOURCES})
-        set_target_properties(${MODULE_DIR} PROPERTIES PREFIX "")
+        set_target_properties(${MODULE_DIR} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "")
         
         # Optionally, you can link specific libraries to each module here if needed
         # target_link_libraries(${MODULE_DIR} PRIVATE some_library)
