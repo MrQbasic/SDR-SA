@@ -88,6 +88,7 @@
         "structs.h": "c",
         "constants.h": "c",
         "text_encoding": "cpp",
-        "coroutine": "cpp"
+        "coroutine": "cpp",
+        "csetjmp": "cpp"
     }
 }

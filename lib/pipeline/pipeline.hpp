@@ -7,10 +7,11 @@
 #include <iostream>
 #include <dlfcn.h>
 #include <filesystem>
+#include <map>
 
 typedef pipelineBlock* (*CreateModuleFunc_pipline)();
 std::vector<CreateModuleFunc_pipline> pipelineBlock_createFuncs;
-std::vector<std::unique_ptr<pipelineBlock>> pipelineBlocks;
+std::map<int, pipelineBlock*> pipelineBlocks;
 std::vector<std::unique_ptr<pipelineBlock>> pipelineBlocks_examples;  //dont fucking touch this
 
 void setupPipline(){
