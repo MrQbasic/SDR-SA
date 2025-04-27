@@ -6,7 +6,8 @@
 #include <string>
 
 #include <iostream>
-
+#include <map>
+#include <vector>
 #include <tuple>
 
 
@@ -36,6 +37,20 @@ public:
 
     virtual PinType getPinType(int id) {return PinType_none;}
 
+    virtual void run() { std::cout << "WARN (" << headline << "): forgot to override run function!" << std::endl;}
+
+    void setBufferSource(int index, void* buf) {
+        if(buf == nullptr){
+            std::cout << "UNEXPECTED ERROR: got nullprt as Target Buffer!" << std::endl;
+            return;
+        }
+        this->sourceBuffers[index] = buf;
+    }
+    void removeBufferSource(int index){
+        this->sourceBuffers.erase(index);
+    }
+    virtual void* getBuffer(int index) {return nullptr;}
+
     int getNodeID() {return this->nodeID;}
 
 protected:
@@ -59,4 +74,7 @@ private:
 protected:
     int nodeID;
     std::string headline = "pipelineBlock";
+
+
+    std::map<int, void*> sourceBuffers;
 };

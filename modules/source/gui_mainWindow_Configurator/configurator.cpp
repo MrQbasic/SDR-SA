@@ -62,9 +62,10 @@ public:
             //if everything is ok create the link
             if(linkOK){
                 //save it so we can draw it
-                this->links.push_back(std::make_pair(start_attr, end_attr));
+                links.push_back(std::make_pair(start_attr, end_attr));
                 std::cout << "New Link: " << start_attr << " to " << end_attr << std::endl;
                 //link the elements so they know what buffer to push to
+                nodeEnd->setBufferSource(start_attr%100-50, nodeStart->getBuffer(end_attr%100));
             }
         }
 
@@ -72,7 +73,6 @@ public:
     }
 
 private:
-    std::vector <std::pair<int, int>> links;
 
     void renderAddPopup(){
         //Popup menu
@@ -83,6 +83,11 @@ private:
                     pipelineBlocks[newBlock->getNodeID()] = newBlock;
                 }
             }
+
+            if(ImGui::Selectable("Reload")){
+                processPipeline();
+            }
+
             ImGui::EndPopup();
         }
     }

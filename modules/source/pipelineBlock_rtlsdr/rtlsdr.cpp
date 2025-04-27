@@ -15,6 +15,22 @@ public:
         std::cout << "Fuck we dont have a clean up fuction. Need to implement that!" << std::endl;
     }
 
+    void* getBuffer(int index) override{
+        switch(index){
+            case 0:
+                return &this->centerFrequency;
+            default:
+                return nullptr;
+        }
+    }
+
+    void run() override{
+        //fetch inputs
+        this->centerFrequency = *((double*) this->sourceBuffers[0]);
+        //process outputs
+    
+    }
+
     PinType getPinType(int id) override{
         switch(id){
             case 0:
@@ -42,6 +58,8 @@ public:
             }
             ImGui::EndCombo();
         }
+
+        ImGui::Text("%f", centerFrequency);
 
         setNodeStyle(PinType_value);
         ImNodes::BeginInputAttribute(this->nodeID * 100 + 0);
@@ -94,6 +112,7 @@ private:
     bool buffersInit();
 
 
+    double centerFrequency;
 };
 
 
