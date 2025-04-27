@@ -84,7 +84,8 @@ private:
                 }
             }
 
-            if(ImGui::Selectable("Reload")){
+            //TODO: implement proper refresh
+            if(ImGui::Selectable("-Reload-")){
                 processPipeline();
             }
 

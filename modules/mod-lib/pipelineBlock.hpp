@@ -14,10 +14,11 @@
 enum PinType{
     PinType_none,
     PinType_value,
+    PinType_samples,
     PinType_spectrum
 };
 
-unsigned int nodeTypeColors[] = {IM_COL32(144, 144, 144, 255), IM_COL32(245, 144, 39, 255), IM_COL32(53, 155, 12, 255)};
+unsigned int nodeTypeColors[] = {IM_COL32(144, 144, 144, 255), IM_COL32(245, 144, 39, 255), IM_COL32(200,162,200,255), IM_COL32(53, 155, 12, 255)};
 
 void setNodeStyle(PinType type){
     ImNodes::PushColorStyle(ImNodesCol_Pin, nodeTypeColors[type]);

@@ -9,9 +9,12 @@ public:
     pipelineBlock_rtlsdr(){
         updateList();
         this->headline = "RTL-SDR";
+        //alloc buffers used to store samples
+        sampleBuffer = new uint8_t[this->sampleSize];
     }
 
     ~pipelineBlock_rtlsdr(){
+        delete[] sampleBuffer;
         std::cout << "Fuck we dont have a clean up fuction. Need to implement that!" << std::endl;
     }
 
@@ -36,7 +39,7 @@ public:
             case 0:
                 return PinType_value;
             case 50:
-                return PinType_spectrum;
+                return PinType_samples;
             default:
                 return PinType_none;
         }
@@ -69,7 +72,7 @@ public:
 
         setNodeStyle(PinType_spectrum);
         ImNodes::BeginOutputAttribute(this->nodeID * 100 + 50);
-        ImGui::Text("FFT");
+        ImGui::Text("Samples");
         ImNodes::EndOutputAttribute();
         ImNodes::PopColorStyle();
 
@@ -113,6 +116,16 @@ private:
 
 
     double centerFrequency;
+    int sampleSize = 512 * 16 * 32;
+    uint8_t* sampleBuffer;
+    
+    void updateSamples(){
+        rtlsdr_set_center_freq(sdr, (uint32_t) centerFrequency);
+        int read;
+        rtlsdr_read_sync(sdr, sampleBuffer, sampleSize, &read);
+        std::cout << read << std::endl;
+    }
+
 };
 
 
