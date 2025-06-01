@@ -42,11 +42,21 @@ public:
 
     void setBufferSource(int index, void* buf) {
         if(buf == nullptr){
-            std::cout << "UNEXPECTED ERROR: got nullprt as Target Buffer!" << std::endl;
+            std::cout << "UNEXPECTED ERROR: got nullprt as target Buffer!" << std::endl;
+            std::cout << "  Buffer index: " << index << " at node: " << this->nodeID;
             return;
         }
         this->sourceBuffers[index] = buf;
     }
+    bool isBufferSet(int index){
+        try{
+            this->sourceBuffers.at(index);
+        }catch(std::exception e){
+            return false;
+        }
+        return true;
+    }
+
     void removeBufferSource(int index){
         this->sourceBuffers.erase(index);
     }
@@ -79,3 +89,17 @@ protected:
 
     std::map<int, void*> sourceBuffers;
 };
+
+
+struct pipeline_buffer_samples{
+    int sampleCount;
+    double centerFreq;
+    void* samples;
+}pipeline_buffer_samples;
+
+void renderSpacer(const char* string, float totalWidth){
+    float label_width = ImGui::CalcTextSize(string).x;
+    ImGui::SameLine();
+    ImGui::Dummy(ImVec2(totalWidth - label_width - 45.0f, 0));
+    ImGui::SameLine();
+}

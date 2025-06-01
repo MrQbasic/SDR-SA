@@ -59,13 +59,14 @@ public:
             PinType startPin = nodeStart->getPinType(start_attr%100);
             PinType endPin = nodeEnd->getPinType(end_attr%100);
             if(startPin != endPin || startPin == PinType_none || endPin == PinType_none) linkOK=false;
+            if(nodeEnd->isBufferSet(end_attr%100)) linkOK=false;
             //if everything is ok create the link
             if(linkOK){
                 //save it so we can draw it
                 links.push_back(std::make_pair(start_attr, end_attr));
                 std::cout << "New Link: " << start_attr << " to " << end_attr << std::endl;
                 //link the elements so they know what buffer to push to
-                nodeEnd->setBufferSource(start_attr%100-50, nodeStart->getBuffer(end_attr%100));
+                nodeEnd->setBufferSource(end_attr%100, nodeStart->getBuffer(start_attr%100-50));
             }
         }
 
