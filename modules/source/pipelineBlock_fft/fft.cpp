@@ -1,4 +1,6 @@
 #include "mod-lib/pipelineBlock.hpp"
+#include <fftw3.h>
+
 
 class pipelineBlock_fft : public pipelineBlock {
 public:
@@ -15,6 +17,13 @@ public:
     }
 
     void run() override {
+        struct pipeline_buffer_samples sampleSource = *((struct pipeline_buffer_samples*) this->sourceBuffers[0]);
+        if(this->currentSampleCount != sampleSource.sampleCount){
+            std::cout << "alright running an update!" << std::endl;
+            this->setupFFT(sampleSource.sampleCount); //inits for a given sample count
+        }
+
+
         std::cout << "Yeah needs to be implemented" << std::endl;
     }
 
@@ -57,6 +66,19 @@ public:
     }
 
 private:
+    fftw_complex* fftwInpBuffer;
+    fftw_complex* fftwOutBuffer;
+    fftw_plan fftwPlan;
+
+    int currentSampleCount = 0;
+
+    bool setupFFT(int sampleCount){
+        fftwInpBuffer = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sampleCount);
+        fftwOutBuffer = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sampleCount);
+        fftwPlan = fftw_plan_dft_1d(sampleCount, fftwInpBuffer, fftwOutBuffer, FFTW_FORWARD, FFTW_ESTIMATE);
+        this->currentSampleCount = sampleCount;
+    }
+
 
 };
 

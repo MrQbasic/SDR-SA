@@ -11,6 +11,7 @@ public:
         int maxWidth = ImGui::GetContentRegionAvail().x;
         ImPlot::BeginPlot("###plot", ImVec2(maxWidth * 0.7, -1));
         ImPlot::EndPlot();
+        
 
     }
 
