@@ -10,12 +10,12 @@ public:
     BLADERF(bladerf_devinfo devinfo){
         //copy the dev info
         memcpy(&this->blade_info, &devinfo, sizeof(bladerf_devinfo));
-        
+    
         //create the device name
-        int len = 600;
-        this->name = new char(len);
-        std::snprintf(this->name, len, "bladeRF ", this->blade_info.serial);
+        this->name = new char(33);
+        std::snprintf(this->name, 33, "%s", this->blade_info.product);
 
+        this->inited = false;
     }
 
     int init() override{
@@ -24,9 +24,14 @@ public:
         if(!error){
             std::cout << "Error: can't open bladeRF" << std::endl;
         }
-
+        //check the gain range for every chanel
+        channel_count_rx = bladerf_get_channel_count(this->blade, BLADERF_RX);
+        //check all the channels for gain ?
+        for(int i=0; i<=channel_count_rx; i++){
+            
+        }
+        //everything is ok
         inited = true;
-
         return 0;
     }
 
@@ -41,7 +46,9 @@ public:
         }
         if(!this->displayMenu) return;
         if(ImGui::Begin(this->name, &(this->displayMenu), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)){
-            
+            ImGui::Text("SN: %s", this->blade_info.serial);
+            ImGui::SliderInt("Gain", &gain, -100, 100);
+
             ImGui::End();
         }
     }
@@ -75,10 +82,11 @@ public:
 private:
     bool displayMenu = false;
 
+    int gain;
+    size_t channel_count_rx;
 
     char* name;
     bool inited;
-
 
     struct bladerf *blade;
     struct bladerf_devinfo blade_info;
