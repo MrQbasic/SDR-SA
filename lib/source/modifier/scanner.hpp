@@ -11,9 +11,13 @@
 
 #include <iostream>
 
+#define outSampSizeMin 100
+#define outSampSizeMax 1000000
+
+
 class Source_Scanner : public Source{
 public:
-    //name gets delated by the Scanner destructor
+    //name gets deleted by the Scanner destructor
     Source_Scanner(Source* src){
         //auto gened name
         char* srcName = (char*) src->getName();
@@ -33,6 +37,7 @@ public:
         this->dataYAvgCnt = nullptr;
         this->nextFreqHigh =1000000000;
         this->nextFreqLow  = 960000000;
+        this->overlap = 1.0f;
         //autocreate the Graph as well
         if(setting_easyMode){
             Graph* newGraph = new Graph((Source*)this);
@@ -55,6 +60,7 @@ public:
         this->nextFreqHigh = 110000000;
         this->nextFreqLow  =  80000000;
         this->source = nullptr;
+        this->overlap = 1.0f;
     }
     
     double getBandwidth() override{
@@ -100,6 +106,7 @@ public:
             for(int i=0; i<sampleCount; i++){
                 this->dataX[i] = (i * freqStep) + freqLow;
                 this->dataY[i] = 0;
+                this->dataYAvgCnt[i] = 0;
             }
 
         }
@@ -109,7 +116,7 @@ public:
         }
         try{
             //centerFreq start val calc
-            double srcBw = this->source->getBandwidth();
+            double srcBw = this->source->getBandwidth() / (1+overlap);
             double currentCenterFreq = this->freqLow + srcBw/2;
             //go though all sweep pos
             bool done = false;
@@ -120,8 +127,10 @@ public:
                 this->source->updateData(currentCenterFreq);
                 double *srcDataX, *srcDataY;
                 int cnt = this->source->getData(&srcDataX, &srcDataY);
+                int resizedCnt = (int) ( (float) cnt / (1.0f+overlap));
+                int offset = (cnt-resizedCnt)/2;
                 //downsize the samples we got from the src to the size allocated in the scanner
-                for(int i=0; i<cnt; i++){
+                for(int i=offset; i<resizedCnt+offset; i++){
                     //y mapping calculation
                     double xVal =  srcDataX[i];
                     //check if we are done
@@ -129,6 +138,7 @@ public:
                         done = true;
                         break;
                     }
+                    //calc the position in the buffer
                     double freqOffset = xVal - freqLow;
                     double bw = getBandwidth();
                     int index = (int) ((freqOffset/bw)*sampleCount);
@@ -137,18 +147,57 @@ public:
                         done = true;
                         break;
                     }
-                    if(lastIndex != index){
+                    //check if we are on a new index
+                    //we need to do this is loop to avoid buffer swapping and get a direct response on the output
+                    if(index != lastIndex){
+                        dataYAvgCnt[index] = 0; //reset the avg cnt
                         dataY[index] = 0;
-                        dataYAvgCnt[index] = 0;
+                        //check if there was a last sample
                         if(lastIndex != -1){
-                            dataY[lastIndex] /= dataYAvgCnt[lastIndex];
+                            //check if there are samples
+                            if(dataYAvgCnt[lastIndex]==0 && lastIndex >= 1){
+                                //to avoid null samples fill with data from before
+                                dataY[lastIndex] = dataY[lastIndex-1];
+                            }else{
+                                //do the avg calc
+                                dataY[lastIndex] /= dataYAvgCnt[lastIndex];
+                            }
                         }
-                        lastIndex = index;
                     }
-                    dataY[index] += srcDataY[i];
-                    dataYAvgCnt[index] ++;
-                }
 
+                    //handle downsampling
+                    switch(this->downSampleType){
+                        case 0: //Avg
+                            dataY[index] += srcDataY[i];
+                            dataYAvgCnt[index]++;
+                            break;
+
+                        case 1: //Min
+                            //check if this is the first sample
+                            if(dataYAvgCnt[index] == 0){
+                                dataYAvgCnt[index] = 1;
+                                dataY[index] = srcDataY[i];
+                            }
+                            //check if there is a smaller data point
+                            if(srcDataY[i] < dataY[index]){
+                                dataY[index] = srcDataY[i];
+                            }
+                            break;
+
+                        case 2: //Max
+                            //check if this is the first sample
+                            if(dataYAvgCnt[index] == 0){
+                                dataYAvgCnt[index] = 1;
+                                dataY[index] = srcDataY[i];
+                            }
+                            //check if there is a bigger data point
+                            if(srcDataY[i] > dataY[index]){
+                                dataY[index] = srcDataY[i];
+                            }
+                            break;
+                    }
+                }
+                //set center freq for the next slice
                 currentCenterFreq += srcBw;
             }
             std::cout << "" <<  std::endl;
@@ -201,11 +250,11 @@ public:
                 }
             }
 
-            //Input OutBuffer Size
+            //Input OutBuffer SizedownSampleType
             if(ImGui::InputInt("Output Size", &(this->newSampleCount))){
                 //limit the size 
-                if(this->newSampleCount < 1000) this->newSampleCount = 1000;
-                if(this->newSampleCount > 50000) this->newSampleCount = 50000;
+                if(this->newSampleCount < outSampSizeMin) this->newSampleCount = outSampSizeMin;
+                if(this->newSampleCount > outSampSizeMax) this->newSampleCount = outSampSizeMax;
             }
             //Input Freq
             auto tmpFreqHigh = this->nextFreqHigh;
@@ -220,7 +269,12 @@ public:
                     this->nextFreqLow = tmpFreqLow;
                 }
             }
-            //TODOInput Downsample Type
+            //Downsample type
+            const char* downsampleTypeStrings[] = {"Avg", "Min", "Max"};
+            ImGui::Combo("Downsample: ", &this->downSampleType, downsampleTypeStrings, 3);
+
+            //FreqDomain Overlap to get edges out
+            ImGui::SliderFloat("overlap", &(this->overlap), 0.0f, 1.0f);
             
             //Input Remove
             if(ImGui::Button("Remove")){
@@ -244,6 +298,9 @@ private:
     char* newNameBuffer;
     double nextFreqHigh;
     double nextFreqLow;
+    float overlap;
+    int downSampleType = 0; //Avg, Min, Max
+    
 
     //needed for avg
     int *dataYAvgCnt;
